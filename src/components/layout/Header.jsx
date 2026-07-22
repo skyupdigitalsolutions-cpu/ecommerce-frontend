@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Headset, Search } from "lucide-react";
-import { CATEGORIES } from "../../data/catalog";
+import { useCategories } from "../../lib/useCatalog";
 
 /* ------------------------------------------------------------------ *
  * Inline SVG icons
@@ -49,7 +49,18 @@ const Ic = {
   ),
 };
 
+const NAV_LABELS = {
+  "stationery-letterhead-and-notebooks": "Stationery",
+  "signs-posters-and-marketing-materials": "Signs & Posters",
+  "labels-stickers-and-packaging": "Labels & Packaging",
+  "clothing-bags-and-caps": "Clothing & Bags",
+  "mug-albums-and-gifts": "Mugs & Gifts",
+  "stamps-and-ink": "Stamps & Ink",
+  "custom-polo-t-shirts": "Polo T-Shirts",
+};  
+
 export function Header() {
+  const { categories: CATEGORIES } = useCategories();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openAcc, setOpenAcc] = useState(null); // mobile accordion
 
@@ -176,7 +187,7 @@ export function Header() {
                 href={`/category/${cat.slug}`}
                 className="flex items-center gap-1 border-b-2 border-transparent px-3 py-3 text-[16px] font-semibold text-[#344054] transition group-hover:border-[#2F6BFF] group-hover:text-[#2F6BFF]"
               >
-                {cat.short}
+                {NAV_LABELS[cat.slug] || cat.short}
                 <Ic.Chevron
                   width="14"
                   height="14"
@@ -273,7 +284,7 @@ export function Header() {
                   </a>
                   <button
                     onClick={() => setOpenAcc(open ? null : cat.slug)}
-                    aria-label={`Toggle ${cat.short}`}
+                    aria-label={`Toggle ${NAV_LABELS[cat.slug] || cat.short}`}
                     className="p-2"
                   >
                     <Ic.Chevron

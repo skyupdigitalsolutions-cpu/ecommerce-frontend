@@ -1,5 +1,4 @@
-import { getProductById } from "../../../data/catalog";
 export default function title(pageContext) {
-  const p = getProductById(pageContext.routeParams.id);
+  const p = pageContext.data?.product;
   return p ? `Customize ${p.title} – SkyUp` : "Customize – SkyUp";
 }

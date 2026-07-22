@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { usePageContext } from "vike-react/usePageContext";
+import { useData } from "vike-react/useData";
 import { Type, ImagePlus, Trash2, Palette, Download, MapPin, User, Phone, Box, Square } from "lucide-react";
-import { getProductBySlug } from "../../../data/catalog";
 import Product3DPreview from "../../../components/product/Product3DPreview";
 
 const CANVAS = 520; // px, square editor stage
 
 export default function Page() {
-  const { routeParams } = usePageContext();
-  const product = getProductBySlug(routeParams.id);
+  const { product } = useData();
 
   const canvasElRef = useRef(null);
   const fabricRef = useRef(null);

@@ -291,7 +291,7 @@ export default function Page() {
           </div>
         </div>
       </div>
-      <RelatedProducts category={product.category} currentId={product.id} />
+      <RelatedProducts items={related} category={product.category} />
       <BrowseDesignsModal
         open={browseOpen}
         onClose={() => setBrowseOpen(false)}

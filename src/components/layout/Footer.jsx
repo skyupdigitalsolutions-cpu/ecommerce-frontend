@@ -74,7 +74,7 @@ const SOCIALS = [
 
 export function Footer() {
   return (
-    <footer className="w-full bg-white font-sans">
+    <footer className="w-full bg-white font-sans mt-10 lg:mt-20">
       {/* ---------- feature strip ---------- */}
       <div className="border-t border-slate-200">
         <div className="mx-auto  px-5 sm:px-8 lg:px-12">
