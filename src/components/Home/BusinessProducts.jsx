@@ -1,33 +1,13 @@
-import { useEffect, useState } from "react";
 import { useCategories } from "../../lib/useCatalog";
+import { useBookmarks } from "../../lib/useBookmarks";
 import { Tag, Layers, Bookmark } from "lucide-react";
 
-const BK_KEY = "skyup_bookmarks_v1";
-
-function readBookmarks() {
-  try { return JSON.parse(localStorage.getItem(BK_KEY) || "[]"); } catch { return []; }
-}
-function writeBookmarks(list) {
-  try { localStorage.setItem(BK_KEY, JSON.stringify(list)); } catch {}
-}
-
 function CategoryCard({ cat }) {
-  const [saved, setSaved] = useState(false);
+  const { isSaved, toggle } = useBookmarks();
+  const saved = isSaved(cat.slug);
 
-  // reflect stored state on the client (SSR-safe: false on server + first render)
-  useEffect(() => {
-    setSaved(readBookmarks().some((b) => b.slug === cat.slug));
-  }, [cat.slug]);
-
-  const toggleBookmark = () => {
-    const list = readBookmarks();
-    const exists = list.some((b) => b.slug === cat.slug);
-    const next = exists
-      ? list.filter((b) => b.slug !== cat.slug)
-      : [...list, { slug: cat.slug, short: cat.short, img: cat.img, href: `/category/${cat.slug}` }];
-    writeBookmarks(next);
-    setSaved(!exists);
-  };
+  const toggleBookmark = () =>
+    toggle({ slug: cat.slug, short: cat.short, img: cat.img, href: `/category/${cat.slug}` });
 
   return (
     <div className="flex h-full flex-col rounded-[28px] bg-white p-3 shadow-[0_18px_50px_-22px_rgba(15,23,41,0.30)] ring-1 ring-slate-100">

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Headset, Search } from "lucide-react";
+import { Headset, Search, Bookmark } from "lucide-react";
 import { useCategories } from "../../lib/useCatalog";
 import { useCart } from "../../lib/cart";
+import { useBookmarks } from "../../lib/useBookmarks";
 
 /* ------------------------------------------------------------------ *
  * Inline SVG icons
@@ -65,6 +66,7 @@ export function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openAcc, setOpenAcc] = useState(null); // mobile accordion
   const { count } = useCart();
+  const { count: bookmarkCount } = useBookmarks();
   return (
     <div className="contents font-sans">
       {/* ---------- announcement bar ---------- */}
@@ -151,6 +153,20 @@ export function Header() {
               )}
             </span>
             <span className="hidden lg:inline">Cart</span>
+          </a>
+          <a
+            href="/saved"
+            className="relative hidden flex-none items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#0F1729] transition hover:bg-slate-100 sm:flex"
+          >
+            <span className="relative">
+              <Bookmark width="20" height="20" />
+              {bookmarkCount > 0 && (
+                <span className="absolute -top-2 -right-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#2F6BFF] px-1 text-[10px] font-bold text-white">
+                  {bookmarkCount}
+                </span>
+              )}
+            </span>
+            <span className="hidden lg:inline">Saved</span>
           </a>
 
           {/* hamburger (mobile / tablet) */}
