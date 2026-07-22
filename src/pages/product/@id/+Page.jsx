@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
+import { useData } from "vike-react/useData";              // ← ADD
 import { Star, ChevronDown, ImageIcon, UploadCloud, Check } from "lucide-react";
-import { getProductBySlug } from "../../../data/catalog";
 import BrowseDesignsModal from "../../../components/product/BrowseDesignsModal";
 import UploadDesignModal from "../../../components/product/UploadDesignModal";
 import RelatedProducts from "../../../components/product/RelatedProducts";
