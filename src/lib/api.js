@@ -64,13 +64,12 @@ export async function getCategoryBySlug(slug) {
   return cats.find((c) => c.slug === slug) || null;
 }
 
-export async function getProductsByCategory(slug, limit = 100) {
-  const data = await fetchJson(ENDPOINTS.products(`?category=${encodeURIComponent(slug)}&limit=${limit}`));
-  const list = Array.isArray(data) ? data : data.products || [];
-  return list.map(normalizeProduct);
+export async function getProductsByCategory(slug, limit = 500) {
+  const all = await getAllProducts(limit);
+  return all.filter((p) => p.category === slug);
 }
 
-export async function getAllProducts(limit = 100) {
+export async function getAllProducts(limit = 500) {
   const data = await fetchJson(ENDPOINTS.products(`?limit=${limit}`));
   const list = Array.isArray(data) ? data : data.products || [];
   return list.map(normalizeProduct);

@@ -11,7 +11,7 @@ const PRODUCTS = [
     src: "/images/brouchure_design.jpg",
     alt: "Brochure Design",
     bg: "#E8ECEF",
-    href: "category/signs-posters",
+    href: "/category/signs-posters-and-marketing-materials",
   },
   {
     src: "/images/letter_head.jpg",
@@ -23,19 +23,19 @@ const PRODUCTS = [
     src: "/images/sticker&packaging.jpg",
     alt: "Stickers & Packaging",
     bg: "#F0E3DC",
-    href: "category/labels-packaging",
+    href: "/category/labels-stickers-and-packaging",
   },
   {
     src: "/images/custom_packaging.jpg",
     alt: "Custom Packaging",
     bg: "#ECE6DD",
-    href: "category/labels-packaging",
+    href: "/category/labels-stickers-and-packaging",
   },
   {
     src: "/images/custom_designs.jpg",
     alt: "Custom Designs",
     bg: "#EDE9E3",
-    href: "category/clothing-bags",
+    href: "/category/clothing-bags-and-caps",
   },
 ];
 

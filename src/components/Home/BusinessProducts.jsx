@@ -16,13 +16,13 @@ const stroke = {
 
 const PRODUCTS = [
   { title: "Visiting Cards", subtitle: "Glossy, Premium, Matte & more", img: "/images/visiting_cards.jpg", price: "₹499", meta: "40+ items", href: "/category/visiting-cards" },
-  { title: "Custom Stationery", subtitle: "Letterheads, ID Cards & more", img: "/images/stationery.jpg", price: "₹299", meta: "35+ items", href: "/category/stationery" },
-  { title: "Stamps & Inks", subtitle: "Self-ink, Pre-ink rubber stamps & more", img: "/images/stamps&inks.jpg", price: "₹199", meta: "28+ items", href: "/category/stamps-ink" },
-  { title: "Labels & Packaging", subtitle: "products, Packages, Stickers & more", img: "/images/packaging_labels.jpeg", price: "₹349", meta: "50+ items", href: "/category/labels-packaging" },
-  { title: "Clothing & Bags", subtitle: "T-shirts, caps, Bags & more", img: "/images/clothing.jpg", price: "₹259", meta: "44+ items", href: "/category/clothing-bags" },
-  { title: "Mugs, Albums & Gifts", subtitle: "Mugs, Photo Albums, Lamps & more", img: "/images/gifts.webp", price: "₹399", meta: "60+ items", href: "/category/mugs-gifts" },
+  { title: "Custom Stationery", subtitle: "Letterheads, ID Cards & more", img: "/images/stationery.jpg", price: "₹299", meta: "35+ items", href: "/category/stationery-letterhead-and-notebooks" },
+  { title: "Stamps & Inks", subtitle: "Self-ink, Pre-ink rubber stamps & more", img: "/images/stamps&inks.jpg", price: "₹199", meta: "28+ items", href: "/category/stamps-and-ink" },
+  { title: "Labels & Packaging", subtitle: "products, Packages, Stickers & more", img: "/images/packaging_labels.jpeg", price: "₹349", meta: "50+ items", href: "/category/labels-stickers-and-packaging" },
+  { title: "Clothing & Bags", subtitle: "T-shirts, caps, Bags & more", img: "/images/clothing.jpg", price: "₹259", meta: "44+ items", href: "/category/clothing-bags-and-caps" },
+  { title: "Mugs, Albums & Gifts", subtitle: "Mugs, Photo Albums, Lamps & more", img: "/images/gifts.webp", price: "₹399", meta: "60+ items", href: "/category/mug-albums-and-gifts"  },
   { title: "Drinkware", subtitle: "Cups, Sippers, Glasses & more", img: "/images/drinkwares.jpg", price: "₹329", meta: "32+ items", href: "/category/drinkware" },
-  { title: "Custom Polo T-shirts", subtitle: "Printed, Embroidered, Polyster & more", img: "/images/t-shirts.jpg", price: "₹2799", meta: "38+ items", href: "/category/polo-tshirts" },
+  { title: "Custom Polo T-shirts", subtitle: "Printed, Embroidered, Polyster & more", img: "/images/t-shirts.jpg", price: "₹2799", meta: "38+ items", href: "/category/custom-polo-t-shirts" },
 ];
 
 export function BusinessProducts() {

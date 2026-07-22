@@ -9,9 +9,12 @@ const BANNERS = [
     priceFrom: "Rs 650",
     img: "/images/poster-banner.webp",
     tags: [
-      { label: "Custom Photo Albums", href: "/category/mugs-gifts" },
-      { label: "Mugs", href: "/category/mugs-gifts" },
-      { label: "Canvas Prints", href: "/category/signs-posters" },
+      { label: "Custom Photo Albums", href: "/category/mug-albums-and-gifts" },
+      { label: "Mugs", href: "/category/mug-albums-and-gifts" },
+      {
+        label: "Canvas Prints",
+        href: "/category/signs-posters-and-marketing-materials",
+      },
     ],
   },
   {
@@ -19,9 +22,12 @@ const BANNERS = [
     priceFrom: "Rs. 320",
     img: "/images/wear-your-brand.jpg",
     tags: [
-      { label: "Custom Posters", href: "/category/signs-posters" },
-      { label: "Custom T-shirts", href: "/category/clothing-bags" },
-      { label: "Caps", href: "/category/clothing-bags" },
+      {
+        label: "Custom Posters",
+        href: "/category/signs-posters-and-marketing-materials",
+      },
+      { label: "Custom T-shirts", href: "/category/clothing-bags-and-caps" },
+      { label: "Caps", href: "/category/clothing-bags-and-caps" },
     ],
   },
   {
@@ -29,9 +35,18 @@ const BANNERS = [
     priceFrom: "Rs 199",
     img: "/images/standies-banner.jpg",
     tags: [
-      { label: "Banners", href: "/category/signs-posters" },
-      { label: "Standees", href: "/category/signs-posters" },
-      { label: "Flyers", href: "/category/signs-posters" },
+      {
+        label: "Banners",
+        href: "/category/signs-posters-and-marketing-materials",
+      },
+      {
+        label: "Standees",
+        href: "/category/signs-posters-and-marketing-materials",
+      },
+      {
+        label: "Flyers",
+        href: "/category/signs-posters-and-marketing-materials",
+      },
     ],
   },
   {
