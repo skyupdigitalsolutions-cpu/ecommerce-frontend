@@ -103,7 +103,7 @@ function Gallery({ gallery, title }) {
 
 export default function Page() {
   const { routeParams } = usePageContext();
-  const product = getProductBySlug(routeParams.id);
+  const { product, related } = useData();
 
   const [color, setColor] = useState(0);
   const [qty, setQty] = useState(1);
