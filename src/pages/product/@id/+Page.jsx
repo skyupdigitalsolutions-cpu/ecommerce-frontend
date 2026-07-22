@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
 import { Star, ChevronDown, ImageIcon, UploadCloud, Check } from "lucide-react";
-import { getProductById } from "../../../data/catalog";
+import { getProductBySlug } from "../../../data/catalog";
 import BrowseDesignsModal from "../../../components/product/BrowseDesignsModal";
 import UploadDesignModal from "../../../components/product/UploadDesignModal";
 import RelatedProducts from "../../../components/product/RelatedProducts";
@@ -103,7 +103,7 @@ function Gallery({ gallery, title }) {
 
 export default function Page() {
   const { routeParams } = usePageContext();
-  const product = getProductById(routeParams.id);
+  const product = getProductBySlug(routeParams.id);
 
   const [color, setColor] = useState(0);
   const [qty, setQty] = useState(1);
@@ -243,6 +243,14 @@ export default function Page() {
               >
                 <UploadCloud className="h-5 w-5" /> Upload design
               </button>
+              {product.customizable && (
+                <a
+                  href={`/customize/${product.slug}`}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0037CA] py-3.5 text-[15px] font-semibold text-white transition hover:bg-black"
+                >
+                  Customize this product
+                </a>
+              )}
 
               {design && (
                 <div className="flex items-center gap-3 rounded-lg bg-[#ECFDF5] px-4 py-3">

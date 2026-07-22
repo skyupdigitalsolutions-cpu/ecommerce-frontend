@@ -9,9 +9,9 @@ const BANNERS = [
     priceFrom: "Rs 650",
     img: "/images/poster-banner.webp",
     tags: [
-      { label: "Custom Photo Albums", href: "/product/photo-albums" },
-      { label: "Mugs", href: "/product/mugs" },
-      { label: "Canvas Prints", href: "/product/canvas-prints" },
+      { label: "Custom Photo Albums", href: "/category/mugs-gifts" },
+      { label: "Mugs", href: "/category/mugs-gifts" },
+      { label: "Canvas Prints", href: "/category/signs-posters" },
     ],
   },
   {
@@ -19,9 +19,9 @@ const BANNERS = [
     priceFrom: "Rs. 320",
     img: "/images/wear-your-brand.jpg",
     tags: [
-      { label: "Custom Posters", href: "/product/polo-tshirts" },
-      { label: "Custom T-shirts", href: "/product/custom-tshirts" },
-      { label: "Caps", href: "/product/caps" },
+      { label: "Custom Posters", href: "/category/signs-posters" },
+      { label: "Custom T-shirts", href: "/category/clothing-bags" },
+      { label: "Caps", href: "/category/clothing-bags" },
     ],
   },
   {
@@ -29,9 +29,9 @@ const BANNERS = [
     priceFrom: "Rs 199",
     img: "/images/standies-banner.jpg",
     tags: [
-      { label: "Banners", href: "/product/banners" },
-      { label: "Standees", href: "/product/standees" },
-      { label: "Flyers", href: "/product/flyers" },
+      { label: "Banners", href: "/category/signs-posters" },
+      { label: "Standees", href: "/category/signs-posters" },
+      { label: "Flyers", href: "/category/signs-posters" },
     ],
   },
   {
@@ -39,9 +39,9 @@ const BANNERS = [
     priceFrom: "Rs 249",
     img: "/images/drinkwares-banner.webp",
     tags: [
-      { label: "Water Bottles", href: "/product/water-bottles" },
-      { label: "Tumblers", href: "/product/tumblers" },
-      { label: "Sippers", href: "/product/sippers" },
+      { label: "Water Bottles", href: "/category/drinkware" },
+      { label: "Tumblers", href: "/category/drinkware" },
+      { label: "Sippers", href: "/category/drinkware" },
     ],
   },
 ];

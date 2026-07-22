@@ -1,4 +1,10 @@
-import { BookmarkCheckIcon, BoxIcon, HeartIcon, ShoppingCartIcon, TagIcon } from "lucide-react";
+import {
+  BookmarkCheckIcon,
+  BoxIcon,
+  HeartIcon,
+  ShoppingCartIcon,
+  TagIcon,
+} from "lucide-react";
 
 const stroke = {
   fill: "none",
@@ -8,72 +14,15 @@ const stroke = {
   strokeLinejoin: "round",
 };
 
-
 const PRODUCTS = [
-  {
-    title: "Visiting Cards",
-    subtitle: "Glossy, Premium, Matte & more",
-    img: "/images/visiting_cards.jpg",
-    price: "₹499",
-    meta: "40+ items",
-    href: "/business/startup-branding",
-  },
-  {
-    title: "Custom Stationery",
-    subtitle: "Letterheads, ID Cards & more",
-    img: "/images/stationery.jpg",
-    price: "₹299",
-    meta: "35+ items",
-    href: "/business/cafe-restaurant",
-  },
-  {
-    title: "Stamps & Inks",
-    subtitle: "Self-ink, Pre-ink rubber stamps & more",
-    img: "/images/stamps&inks.jpg",
-    price: "₹199",
-    meta: "28+ items",
-    href: "/business/education-campus",
-  },
-  {
-    title: "Labels & Packaging",
-    subtitle: "products, Packages, Stickers & more",
-    img: "/images/packaging_labels.jpeg",
-    price: "₹349",
-    meta: "50+ items",
-    href: "/business/events-promotions",
-  },
-  {
-    title: "Clothing & Bags",
-    subtitle: "T-shirts, caps, Bags & more",
-    img: "/images/clothing.jpg",
-    price: "₹259",
-    meta: "44+ items",
-    href: "/business/ecommerce",
-  },
-  {
-    title: "Mugs, Albums & Gifts",
-    subtitle: "Mugs, Photo Albums, Lamps & more",
-    img: "/images/gifts.webp",
-    price: "₹399",
-    meta: "60+ items",
-    href: "/business/corporate-promotions",
-  },
-  {
-    title: "Drikware",
-    subtitle: "Cups, Sippers, Glasses & more",
-    img: "/images/drinkwares.jpg",
-    price: "₹329",
-    meta: "32+ items",
-    href: "/business/hotels-rooms",
-  },
-  {
-    title: "Custom Polo T-shirts",
-    subtitle: "Printed, Embroidered, Polyster & more",
-    img: "/images/t-shirts.jpg",
-    price: "₹2799",
-    meta: "38+ items",
-    href: "/business/boutique-fashion",
-  },
+  { title: "Visiting Cards", subtitle: "Glossy, Premium, Matte & more", img: "/images/visiting_cards.jpg", price: "₹499", meta: "40+ items", href: "/category/visiting-cards" },
+  { title: "Custom Stationery", subtitle: "Letterheads, ID Cards & more", img: "/images/stationery.jpg", price: "₹299", meta: "35+ items", href: "/category/stationery" },
+  { title: "Stamps & Inks", subtitle: "Self-ink, Pre-ink rubber stamps & more", img: "/images/stamps&inks.jpg", price: "₹199", meta: "28+ items", href: "/category/stamps-ink" },
+  { title: "Labels & Packaging", subtitle: "products, Packages, Stickers & more", img: "/images/packaging_labels.jpeg", price: "₹349", meta: "50+ items", href: "/category/labels-packaging" },
+  { title: "Clothing & Bags", subtitle: "T-shirts, caps, Bags & more", img: "/images/clothing.jpg", price: "₹259", meta: "44+ items", href: "/category/clothing-bags" },
+  { title: "Mugs, Albums & Gifts", subtitle: "Mugs, Photo Albums, Lamps & more", img: "/images/gifts.webp", price: "₹399", meta: "60+ items", href: "/category/mugs-gifts" },
+  { title: "Drinkware", subtitle: "Cups, Sippers, Glasses & more", img: "/images/drinkwares.jpg", price: "₹329", meta: "32+ items", href: "/category/drinkware" },
+  { title: "Custom Polo T-shirts", subtitle: "Printed, Embroidered, Polyster & more", img: "/images/t-shirts.jpg", price: "₹2799", meta: "38+ items", href: "/category/polo-tshirts" },
 ];
 
 export function BusinessProducts() {
@@ -90,8 +39,9 @@ export function BusinessProducts() {
         {/* cards */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {PRODUCTS.map((p) => (
-            <article
+            <a
               key={p.title}
+              href={p.href}
               className="flex flex-col rounded-[20px] border border-slate-100 bg-white p-3 shadow-[0_18px_50px_-24px_rgba(15,23,41,0.28)]"
             >
               {/* image */}
@@ -115,7 +65,7 @@ export function BusinessProducts() {
                 {/* meta row */}
                 <div className="mt-4 flex items-center gap-5 text-[15px]">
                   <span className="flex items-center gap-2 text-[#475467]">
-                    <TagIcon className="w-5 h-5"/>
+                    <TagIcon className="w-5 h-5" />
                     from{" "}
                     <span className="font-bold text-[#141414]">{p.price}</span>
                   </span>
@@ -127,22 +77,23 @@ export function BusinessProducts() {
 
                 {/* actions */}
                 <div className="mt-5 flex items-center gap-3">
-                  <a
-                    href={p.href}
-                    className="flex flex-1 items-center justify-center rounded-full bg-[#0037CA] py-4 text-[15px] font-semibold text-white transition hover:bg-[#2a2a2a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#141414]"
-                  >
-                    Shop now
-                  </a>
+                  <span className="flex flex-1 items-center justify-center rounded-full bg-[#0037CA] py-4 text-[15px] font-semibold text-white transition hover:bg-[#2a2a2a]">
+                    Discover Collection
+                  </span>
                   <button
                     type="button"
                     aria-label={`Save ${p.title}`}
-                    className="grid h-14 w-14 flex-none place-items-center cursor-pointer rounded-full border-2 border-slate-200 text-[#f87613] transition hover:bg-black hover:text-white hover:border-white-50 focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-[#F26D6D]"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    className="grid h-14 w-14 flex-none place-items-center cursor-pointer rounded-full border-2 border-slate-200 text-[#f87613] transition hover:bg-black hover:text-white"
                   >
                     <BookmarkCheckIcon />
                   </button>
                 </div>
               </div>
-            </article>
+            </a>
           ))}
         </div>
       </div>

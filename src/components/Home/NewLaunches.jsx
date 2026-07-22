@@ -28,14 +28,14 @@ const Spark = (p) => (
 );
 
 const LAUNCHES = [
-  { name: "Custom Tissue Paper", deal: "Buy 150 Pkt @ ₹6372", img: "/images/custom-tissue-paper.jpg", tint: "#F3F1FA", href: "/product/custom-tissue-paper" },
-  { name: "Premium Finish Stationery", deal: "Buy 100 @ ₹4130", img: "/images/stationery.jpg", tint: "#EEF2FF", href: "/product/premium-finish-stationery" },
-  { name: "Premium Business Stationery", deal: "Buy 100 @ ₹4720", img: "/images/premium-stationary.jpg", tint: "#F0F9FF", href: "/product/premium-business-stationery" },
-  { name: "Premium Sipper Bottles", deal: "Buy 1 @ ₹329", img: "/images/premium-sipper.jpg", tint: "#F5F3FF", href: "/product/premium-sipper-bottles" },
-  { name: "Pocket Photo Album", deal: "Buy 1 @ ₹500", img: "/images/acrylic-photo.jpg", tint: "#FDF4FF", href: "/product/pocket-photo-album" },
-  { name: "Men's Polo T-shirt", deal: "Buy 1 @ ₹499", img: "/images/custom-printed-tee.jpg", tint: "#FEF2F2", href: "/product/mens-polo-tshirt" },
-  { name: "Magic Photo Mug", deal: "Buy 1 @ ₹399", img: "/images/printed_mug.jpg", tint: "#ECFDF5", href: "/product/magic-photo-mug" },
-  { name: "Foil Visiting Cards", deal: "Buy 100 @ ₹899", img: "/images/visiting_cards.jpg", tint: "#FFF7ED", href: "/product/foil-visiting-cards" },
+ { name: "Custom Tissue Paper", deal: "Buy 150 Pkt @ ₹6372", img: "/images/custom-tissue-paper.jpg", tint: "#F3F1FA", href: "/product/custom-packaging-boxes" },
+{ name: "Premium Finish Stationery", deal: "Buy 100 @ ₹4130", img: "/images/stationery.jpg", tint: "#EEF2FF", href: "/product/hardcover-notebooks" },
+{ name: "Premium Business Stationery", deal: "Buy 100 @ ₹4720", img: "/images/premium-stationary.jpg", tint: "#F0F9FF", href: "/product/branded-a4-letterheads" },
+{ name: "Premium Sipper Bottles", deal: "Buy 1 @ ₹329", img: "/images/premium-sipper.jpg", tint: "#F5F3FF", href: "/product/premium-sipper-bottle" },
+{ name: "Pocket Photo Album", deal: "Buy 1 @ ₹500", img: "/images/acrylic-photo.jpg", tint: "#FDF4FF", href: "/product/pocket-photo-album" },
+{ name: "Men's Polo T-shirt", deal: "Buy 1 @ ₹499", img: "/images/custom-printed-tee.jpg", tint: "#FEF2F2", href: "/product/cotton-polo-t-shirt" },
+{ name: "Magic Photo Mug", deal: "Buy 1 @ ₹399", img: "/images/printed_mug.jpg", tint: "#ECFDF5", href: "/product/magic-heat-mug" },
+{ name: "Foil Visiting Cards", deal: "Buy 100 @ ₹899", img: "/images/visiting_cards.jpg", tint: "#FFF7ED", href: "/product/foil-stamped-luxury-cards" },
 ];
 
 export function NewLaunches() {

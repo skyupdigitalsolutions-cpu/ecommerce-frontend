@@ -62,3 +62,4 @@ src/
 - **Admin UI is not included** — this is the customer storefront. Product/order
   admin is done via the API (Postman) or a future admin panel.
 ```
+"T-shirt" by Poly by Google, licensed CC-BY, via Poly Pizza.

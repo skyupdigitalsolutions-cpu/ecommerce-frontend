@@ -9,18 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.2.0",
-    "@mui/material": "^9.2.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@tailwindcss/vite": "^4.3.3",
     "axios": "^1.7.9",
-    "bootstrap": "^5.3.8",
     "fabric": "^7.4.0",
     "lucide-react": "^1.25.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "tailwindcss": "^4.3.3",
+    "three": "^0.185.1",
     "vike": "0.4.259",
     "vike-react": "^0.6.25"
   },

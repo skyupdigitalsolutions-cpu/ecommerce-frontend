@@ -11,6 +11,7 @@ export const CATEGORIES = [
     slug: "visiting-cards",
     short: "Visiting Cards",
     name: "Visiting Cards",
+    banner:"/images/visiting_cards_banner.webp",
     blurb: "Standard, premium, matte, glossy, foil-stamped & more.",
     img: "/images/visiting_cards.jpg",
     tint: "#EEF2FF",
@@ -155,9 +156,9 @@ export const PRODUCTS = [
   { id: "dw-04", title: "Vacuum Coffee Flask", category: "drinkware", sub: "Flasks", img: "/images/drinkwares.jpg", price: 449, mrp: 699, rating: 4.7 },
 
   // polo-tshirts
-  { id: "pt-01", title: "Cotton Polo T-Shirt", category: "polo-tshirts", sub: "Cotton Polo", img: "/images/t-shirts.jpg", price: 499, mrp: 799, rating: 4.8 },
-  { id: "pt-02", title: "Dri-Fit Sports Polo", category: "polo-tshirts", sub: "Dri-Fit Polo", img: "/images/t-shirts.jpg", price: 599, mrp: 899, rating: 4.7 },
-  { id: "pt-03", title: "Embroidered Team Polo", category: "polo-tshirts", sub: "Embroidered", img: "/images/t-shirts.jpg", price: 699, mrp: 999, rating: 4.9 },
+  { id: "pt-01", title: "Cotton Polo T-Shirt", category: "polo-tshirts", sub: "Cotton Polo", img: "/images/t-shirts.jpg", mockup: "/images/mockup-polo-white.jpg", printArea: { x: 0.38, y: 0.30, w: 0.24, h: 0.24 }, model3d: "/models/tshirt.glb", customizable: true, price: 499, mrp: 799, rating: 4.8 },
+  { id: "pt-02", title: "Dri-Fit Sports Polo", category: "polo-tshirts", sub: "Dri-Fit Polo", img: "/images/t-shirts.jpg", mockup: "/images/mockup-polo-white.jpg", printArea: { x: 0.38, y: 0.30, w: 0.24, h: 0.24 }, model3d: "/models/tshirt.glb", customizable: true, price: 599, mrp: 899, rating: 4.7 },
+  { id: "pt-03", title: "Embroidered Team Polo", category: "polo-tshirts", sub: "Embroidered", img: "/images/t-shirts.jpg", mockup: "/images/mockup-polo-white.jpg", printArea: { x: 0.38, y: 0.30, w: 0.24, h: 0.24 }, model3d: "/models/tshirt.glb", customizable: true, price: 699, mrp: 999, rating: 4.9 },
 ];
 
 /* helpers */
@@ -170,3 +171,25 @@ export const getProductsByCategory = (slug) =>
   PRODUCTS.filter((p) => p.category === slug);
 
 export const getProductById = (id) => PRODUCTS.find((p) => p.id === id) || null;
+
+// highest-rated products in a category (excluding one id), for "Trending"
+export const getTrendingByCategory = (slug, excludeId, limit = 6) =>
+  PRODUCTS.filter((p) => p.category === slug && p.id !== excludeId)
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, limit);
+
+// biggest-discount products in a category, for "New Launches"
+export const getNewByCategory = (slug, excludeId, limit = 6) =>
+  PRODUCTS.filter((p) => p.category === slug && p.id !== excludeId)
+    .sort((a, b) => (b.mrp - b.price) / b.mrp - (a.mrp - a.price) / a.mrp)
+    .slice(0, limit);
+
+  const slugify = (s) =>
+  s.toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
+// give every product a slug derived from its title
+PRODUCTS.forEach((p) => { p.slug = p.slug || slugify(p.title); });
+
+// look up by slug (falls back to id so old /product/vc-01 links still work)
+export const getProductBySlug = (key) =>
+  PRODUCTS.find((p) => p.slug === key || p.id === key) || null;

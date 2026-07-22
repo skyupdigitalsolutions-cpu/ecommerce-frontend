@@ -41,7 +41,7 @@ export default function RelatedProducts({ category, currentId }) {
                 key={p.id}
                 className="group flex shrink-0 basis-[70%] snap-start flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:shadow-[0_18px_45px_-24px_rgba(15,23,41,0.35)] sm:basis-[42%] md:basis-[30%] lg:basis-[calc((100%-5rem)/6)]"
               >
-                <a href={`/product/${p.id}`} className="relative overflow-hidden bg-[#F2F1EE]">
+                <a href={`/product/${p.slug}`} className="relative overflow-hidden bg-[#F2F1EE]">
                   <img
                     src={p.img}
                     alt={p.title}
@@ -68,7 +68,7 @@ export default function RelatedProducts({ category, currentId }) {
                   </div>
                   <div className="mt-3 flex items-center justify-center gap-2">
                     <a
-                      href={`/product/${p.id}`}
+                      href={`/product/${p.slug}`}
                       className="flex-1 rounded-full bg-[#0037CA] py-2.5 text-[13px] font-bold text-white transition hover:bg-black"
                     >
                       Shop now
