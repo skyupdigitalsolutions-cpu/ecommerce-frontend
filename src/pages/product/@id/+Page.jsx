@@ -1,10 +1,18 @@
 import { useState } from "react";
 import { usePageContext } from "vike-react/usePageContext";
-import { useData } from "vike-react/useData";              // ← ADD
-import { Star, ChevronDown, ImageIcon, UploadCloud, Check } from "lucide-react";
+import { useData } from "vike-react/useData"; // ← ADD
+import {
+  Star,
+  ChevronDown,
+  ImageIcon,
+  UploadCloud,
+  Check,
+  ShoppingCart,
+} from "lucide-react";
 import BrowseDesignsModal from "../../../components/product/BrowseDesignsModal";
 import UploadDesignModal from "../../../components/product/UploadDesignModal";
 import RelatedProducts from "../../../components/product/RelatedProducts";
+import { useCart } from "../../../lib/cart";
 
 const COLORS = [
   { name: "Black", hex: "#1F2937" },
@@ -104,7 +112,7 @@ function Gallery({ gallery, title }) {
 export default function Page() {
   const { routeParams } = usePageContext();
   const { product, related } = useData();
-
+  const { addItem } = useCart();
   const [color, setColor] = useState(0);
   const [qty, setQty] = useState(1);
   const [browseOpen, setBrowseOpen] = useState(false);
@@ -185,7 +193,7 @@ export default function Page() {
               </p>
             </div>
 
-            <div className="mt-6">
+            {/* <div className="mt-6">
               <p className="text-[14px] font-semibold text-[#0F1729]">
                 Substrate Color
               </p>
@@ -201,30 +209,42 @@ export default function Page() {
                   />
                 ))}
               </div>
-            </div>
+            </div> */}
 
             <div className="mt-6">
               <p className="text-[14px] font-semibold text-[#0F1729]">
                 Quantity
               </p>
-              <div className="mt-2 flex w-full max-w-xs items-center justify-between rounded-lg border border-slate-300 px-4 py-3">
-                <button
-                  type="button"
-                  onClick={() => setQty(Math.max(1, qty - 1))}
-                  className="text-lg font-bold text-[#475467]"
-                >
-                  −
-                </button>
-                <span className="text-[14px] font-medium text-[#0F1729]">
-                  {qty} (₹{product.price}.00 / unit)
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQty(qty + 1)}
-                  className="text-lg font-bold text-[#475467]"
-                >
-                  +
-                </button>
+              <div className="flex gap-5">
+                <div className="mt-2 flex gap-2 items-center justify-between rounded-lg border border-slate-300 px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => setQty(Math.max(1, qty - 1))}
+                    className="text-lg font-bold text-[#475467] cursor-pointer"
+                  >
+                    −
+                  </button>
+                  <span className="text-[14px] font-medium text-[#0F1729]">
+                    {qty} (₹{product.price}.00 / unit)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQty(qty + 1)}
+                    className="text-lg font-bold text-[#475467] cursor-pointer"
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={() => addItem(product, qty)}
+                    className="flex w-full items-center cursor-pointer justify-center gap-2 rounded-lg bg-[#0037CA] px-4 py-4 cursor-pointer text-[15px] font-semibold text-white transition hover:bg-black"
+                  >
+                    <ShoppingCart className="h-5 w-5" />
+                    Add to cart
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -232,14 +252,15 @@ export default function Page() {
               <button
                 type="button"
                 onClick={() => setBrowseOpen(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#7DD3FC] py-3.5 text-[15px] font-semibold text-[#0F1729] transition hover:brightness-95"
+                className="flex w-full items-center justify-center gap-2 rounded-lg cursor-pointer bg-[#7DD3FC] py-3.5 text-[15px] font-semibold text-[#0F1729] transition hover:brightness-95"
               >
                 <ImageIcon className="h-5 w-5" /> Browse designs
               </button>
+
               <button
                 type="button"
                 onClick={() => setUploadOpen(true)}
-                className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 py-3.5 text-[15px] font-semibold text-[#0F1729] transition hover:border-[#0037CA] hover:text-[#0037CA]"
+                className="flex w-full items-center justify-center cursor-pointer gap-2 rounded-lg border border-slate-300 py-3.5 text-[15px] font-semibold text-[#0F1729] transition hover:border-[#0037CA] hover:text-[#0037CA]"
               >
                 <UploadCloud className="h-5 w-5" /> Upload design
               </button>

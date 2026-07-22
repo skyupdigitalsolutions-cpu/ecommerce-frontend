@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Headset, Search } from "lucide-react";
 import { useCategories } from "../../lib/useCatalog";
+import { useCart } from "../../lib/cart";
 
 /* ------------------------------------------------------------------ *
  * Inline SVG icons
@@ -57,13 +58,13 @@ const NAV_LABELS = {
   "mug-albums-and-gifts": "Mugs & Gifts",
   "stamps-and-ink": "Stamps & Ink",
   "custom-polo-t-shirts": "Polo T-Shirts",
-};  
+};
 
 export function Header() {
   const { categories: CATEGORIES } = useCategories();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [openAcc, setOpenAcc] = useState(null); // mobile accordion
-
+  const { count } = useCart();
   return (
     <div className="contents font-sans">
       {/* ---------- announcement bar ---------- */}
@@ -87,7 +88,11 @@ export function Header() {
         <div className="mx-4 flex items-center gap-4 py-2 lg:mx-10 lg:gap-10">
           {/* logo */}
           <a href="/">
-            <img src="/images/logo_skyup.svg" alt="SkyUp" className="w-28 lg:w-42" />
+            <img
+              src="/images/logo_skyup.svg"
+              alt="SkyUp"
+              className="w-28 lg:w-42"
+            />
           </a>
 
           {/* search (desktop) */}
@@ -135,13 +140,15 @@ export function Header() {
           {/* cart */}
           <a
             href="/cart"
-            className="relative flex flex-none items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#0F1729] transition hover:bg-slate-100"
+            className="relative flex flex-none items-center gap-2 rounded-lg px-3 py-2 ..."
           >
             <span className="relative">
               <Ic.Bag width="22" height="22" />
-              <span className="absolute -right-2 -top-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#2F6BFF] px-1 text-[10px] font-bold text-white">
-                1
-              </span>
+              {count > 0 && (
+                <span className="absolute -top-2 -right-2 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#2F6BFF] px-1 text-[10px] font-bold text-white">
+                  {count}
+                </span>
+              )}
             </span>
             <span className="hidden lg:inline">Cart</span>
           </a>
@@ -263,9 +270,11 @@ export function Header() {
             className="relative flex items-center gap-2 rounded-lg bg-[#0A0E1A] px-4 py-2.5 text-sm font-semibold text-white"
           >
             <Ic.Bag width="18" height="18" /> Cart
-            <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-[#2F6BFF] px-1 text-[11px] font-bold">
-              1
-            </span>
+            {count > 0 && (
+              <span className="grid h-5 min-w-[20px] place-items-center rounded-full bg-[#2F6BFF] px-1 text-[11px] font-bold">
+                {count}
+              </span>
+            )}
           </a>
         </div>
 
