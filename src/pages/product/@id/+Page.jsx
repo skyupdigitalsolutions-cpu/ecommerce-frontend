@@ -246,8 +246,16 @@ export default function Page() {
                     Add to cart
                   </button>
                 </div>
+                <div className="mt-2">
+                  <a
+                    href="/design/visiting-card"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0037CA] py-3.5 text-[15px] font-semibold text-white transition hover:bg-black"
+                  >
+                    Design from scratch
+                  </a>
+                </div>
                 <div className="mt-2 gap-2 px-3 rounded flex justify-center items-center">
-                  <SaveButton product={product}/> Save the Item
+                  <SaveButton product={product} /> Save the Item
                 </div>
               </div>
             </div>
