@@ -231,7 +231,7 @@ export default function Page() {
 
         <main className="flex flex-1 items-center justify-center overflow-auto p-8">
           <div className="rounded-lg bg-white shadow-[0_10px_40px_-12px_rgba(15,23,41,0.3)]">
-            <canvas ref={elRef} />
+            <canvas ref={elRef} width={g.canvasW} height={g.canvasH} className="block" style={{ width: g.canvasW, height: g.canvasH }} />
           </div>
         </main>
 
