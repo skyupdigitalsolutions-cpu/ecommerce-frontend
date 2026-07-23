@@ -1,6 +1,7 @@
 import { useProducts } from "../../lib/useCatalog";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "../../lib/cart";
+import SaveButton from "../product/SaveButton";
 
 function Card({ p }) {
   const { addItem } = useCart(); 
@@ -12,6 +13,7 @@ function Card({ p }) {
         href={`/product/${p.slug}`}
         className="relative block h-52 flex-none overflow-hidden bg-[#F2F1EE]"
       >
+        <SaveButton className="cursor-pointer" product={p} floating />
         <img
           src={p.img}
           alt={p.title}

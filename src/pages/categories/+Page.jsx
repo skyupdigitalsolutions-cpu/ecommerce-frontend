@@ -1,6 +1,7 @@
 import { Star, ShoppingCart } from "lucide-react";
 import { useData } from "vike-react/useData";
 import { useCart } from "../../lib/cart";
+import SaveButton from "../../components/product/SaveButton";
 
 function Stars({ value = 0 }) {
   const pct = Math.max(0, Math.min(100, (value / 5) * 100));
@@ -34,6 +35,7 @@ function ProductCard({ p }) {
         href={`/product/${p.slug}`}
         className="relative block h-52 flex-none overflow-hidden bg-[#F2F1EE]"
       >
+        <SaveButton className="cursor-pointer" product={p} floating />
         <img
           src={p.img}
           alt={p.title}

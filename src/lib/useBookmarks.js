@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 const BK_KEY = "skyup_bookmarks_v1";
 const EVT = "skyup-bookmarks-changed";
 
+const keyOf = (b) => b.id || b.slug;
+
 export function readBookmarks() {
   try { return JSON.parse(localStorage.getItem(BK_KEY) || "[]"); } catch { return []; }
 }
@@ -27,16 +29,17 @@ export function useBookmarks() {
     };
   }, []);
 
-  const isSaved = useCallback((slug) => items.some((b) => b.slug === slug), [items]);
+  const isSaved = useCallback((key) => items.some((b) => keyOf(b) === key), [items]);
 
   const toggle = useCallback((entry) => {
     const list = readBookmarks();
-    const exists = list.some((b) => b.slug === entry.slug);
-    writeBookmarks(exists ? list.filter((b) => b.slug !== entry.slug) : [...list, entry]);
+    const k = keyOf(entry);
+    const exists = list.some((b) => keyOf(b) === k);
+    writeBookmarks(exists ? list.filter((b) => keyOf(b) !== k) : [...list, entry]);
   }, []);
 
-  const remove = useCallback((slug) => {
-    writeBookmarks(readBookmarks().filter((b) => b.slug !== slug));
+  const remove = useCallback((key) => {
+    writeBookmarks(readBookmarks().filter((b) => keyOf(b) !== key));
   }, []);
 
   return { items, count: items.length, ready, isSaved, toggle, remove };

@@ -13,6 +13,7 @@ import BrowseDesignsModal from "../../../components/product/BrowseDesignsModal";
 import UploadDesignModal from "../../../components/product/UploadDesignModal";
 import RelatedProducts from "../../../components/product/RelatedProducts";
 import { useCart } from "../../../lib/cart";
+import SaveButton from "../../../components/product/SaveButton";
 
 const COLORS = [
   { name: "Black", hex: "#1F2937" },
@@ -244,6 +245,9 @@ export default function Page() {
                     <ShoppingCart className="h-5 w-5" />
                     Add to cart
                   </button>
+                </div>
+                <div className="mt-2 gap-2 px-3 rounded flex justify-center items-center">
+                  <SaveButton product={product}/> Save the Item
                 </div>
               </div>
             </div>

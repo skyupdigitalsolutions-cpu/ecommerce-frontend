@@ -1,5 +1,6 @@
 import { Star, ShoppingCart } from "lucide-react";
 import { useCart } from "../../lib/cart";
+import SaveButton from "./SaveButton";
 
 function Stars({ value = 0 }) {
   const pct = Math.max(0, Math.min(100, (value / 5) * 100));
@@ -58,6 +59,7 @@ export default function RelatedProducts({ items = [], category }) {
                   href={`/product/${p.slug}`}
                   className="relative block h-52 flex-none overflow-hidden bg-[#F2F1EE]"
                 >
+                  <SaveButton product={p} floating className="cursor-pointer"/>
                   <img
                     src={p.img}
                     alt={p.title}

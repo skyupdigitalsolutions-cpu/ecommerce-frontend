@@ -3,6 +3,7 @@ import { useData } from "vike-react/useData";
 import { usePageContext } from "vike-react/usePageContext";
 import { ShoppingCart, ChevronRightIcon } from "lucide-react";
 import { useCart } from "../../../lib/cart";
+import SaveButton from "../../../components/product/SaveButton";
 
 const Star = (p) => (
   <svg viewBox="0 0 24 24" fill="currentColor" {...p}>
@@ -36,6 +37,7 @@ function CategoryHero({ category }) {
         className="absolute inset-0 h-full w-full object-cover"
         onError={(e) => (e.currentTarget.style.visibility = "hidden")}
       />
+      
       <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
       <div className="relative flex min-h-[280px] items-center p-6 sm:min-h-[360px] sm:p-10 lg:min-h-[420px] lg:p-14">
         <div className="max-w-xl">
@@ -64,6 +66,7 @@ function ProductCard({ p }) {
         href={`/product/${p.slug}`}
         className="relative block h-60 flex-none overflow-hidden bg-[#F2F1EE]"
       >
+        <SaveButton product={p} floating />
         <img
           src={p.img}
           alt={p.title}

@@ -156,7 +156,7 @@ export function Header() {
           </a>
           <a
             href="/saved"
-            className="relative hidden flex-none items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#0F1729] transition hover:bg-slate-100 sm:flex"
+            className="relative flex-none items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-[#0F1729] transition hover:bg-slate-100 sm:flex"
           >
             <span className="relative">
               <Bookmark width="20" height="20" />
@@ -281,6 +281,7 @@ export function Header() {
           >
             <Ic.User width="18" height="18" /> Account
           </a>
+
           <a
             href="/cart"
             className="relative flex items-center gap-2 rounded-lg bg-[#0A0E1A] px-4 py-2.5 text-sm font-semibold text-white"
