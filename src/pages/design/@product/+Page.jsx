@@ -24,6 +24,8 @@ import {
   Sliders,
   Triangle,
   Minus,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { getPrintProduct, geometry } from "../../../lib/print/products";
 import {
@@ -78,6 +80,9 @@ export default function Page() {
   const guidesRef = useRef([]);
   const historyRef = useRef({ stack: [], i: -1, muted: false });
   const sidesRef = useRef({ front: null, back: null });
+  const clipboardRef = useRef(null);
+  const nudgeTimerRef = useRef(null);
+  const sideRef = useRef("front");
 
   const [ready, setReady] = useState(false);
   const [side, setSide] = useState("front");
@@ -90,6 +95,7 @@ export default function Page() {
 
   const g = product ? geometry(product) : null;
   const thumbs = useTemplateThumbs(product, schemeId);
+  const lsKey = (s) => `design:${product?.id}:v2:${s}`;
 
   const syncSel = useCallback(() => {
     const o = fabricRef.current?.getActiveObject();
@@ -103,6 +109,11 @@ export default function Page() {
             fontSize: o.fontSize,
             fontWeight: o.fontWeight,
             textAlign: o.textAlign,
+            charSpacing: o.charSpacing,
+            lineHeight: o.lineHeight,
+            fontStyle: o.fontStyle,
+            underline: o.underline,
+            locked: !!o.lockMovementX,
           }
         : null,
     );
@@ -119,9 +130,9 @@ export default function Page() {
     setCanUndo(h.i > 0);
     setCanRedo(false);
     try {
-      localStorage.setItem(`design:${product.id}:${side}`, json);
+      localStorage.setItem(lsKey(sideRef.current), json);
     } catch {}
-  }, [product, side]);
+  }, [product]);
 
   const drawGuides = useCallback(() => {
     const c = fabricRef.current;
@@ -168,13 +179,14 @@ export default function Page() {
     const tpl = getVcTemplate(tplId);
     sidesRef.current = { front: null, back: null };
     try {
-      localStorage.removeItem(`design:${product.id}:front`);
-      localStorage.removeItem(`design:${product.id}:back`);
+      localStorage.removeItem(lsKey("front"));
+      localStorage.removeItem(lsKey("back"));
     } catch {}
     if (tpl.doubleSided) {
       const both = tpl.buildSides(g);
       sidesRef.current.front = JSON.stringify(both.front);
       sidesRef.current.back = JSON.stringify(both.back);
+      sideRef.current = "front";
       setSide("front");
       await applyJson(sidesRef.current.front);
     } else {
@@ -184,6 +196,7 @@ export default function Page() {
         objects: [],
       };
       sidesRef.current.back = JSON.stringify(blank);
+      sideRef.current = "front";
       setSide("front");
       await applyJson(
         JSON.stringify(tpl.build(getVcScheme(schemeIdArg || schemeId), g)),
@@ -212,6 +225,14 @@ export default function Page() {
       fabricRef.current = canvas;
       attachSnapGuides(canvas, g, fabric);
 
+      if (typeof document !== "undefined" && document.fonts) {
+        try {
+          await Promise.all(FONTS.map((f) => document.fonts.load(`16px "${f}"`)));
+          await document.fonts.ready;
+        } catch {}
+      }
+      if (disposed) return;
+
       if (!disposed) setReady(true);
       try {
         drawGuides();
@@ -221,7 +242,7 @@ export default function Page() {
 
       const stored = (() => {
         try {
-          return localStorage.getItem(`design:${product.id}:front`);
+          return localStorage.getItem(lsKey("front"));
         } catch {
           return null;
         }
@@ -251,33 +272,82 @@ export default function Page() {
       canvas.on("selection:cleared", () => setSel(null));
       snapshot();
     })();
-    const onKey = (e) => {
+    const onKey = async (e) => {
       const c = fabricRef.current;
       if (!c) return;
-      if (
-        (e.key === "Delete" || e.key === "Backspace") &&
-        c.getActiveObject() &&
-        !c.getActiveObject().isEditing
-      ) {
-        c.remove(c.getActiveObject());
+      const active = c.getActiveObject();
+      const editing = active?.isEditing;
+      const meta = e.ctrlKey || e.metaKey;
+      const key = e.key.toLowerCase();
+
+      // Delete
+      if ((e.key === "Delete" || e.key === "Backspace") && active && !editing) {
+        e.preventDefault();
+        c.remove(active);
+        c.discardActiveObject();
         c.requestRenderAll();
         syncSel();
+        return;
       }
-      if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+      // Undo
+      if (meta && key === "z" && !e.shiftKey) {
         e.preventDefault();
         undo();
+        return;
       }
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        (e.key === "y" || (e.shiftKey && e.key === "z"))
-      ) {
+      // Redo
+      if (meta && (key === "y" || (e.shiftKey && key === "z"))) {
         e.preventDefault();
         redo();
+        return;
+      }
+      // Copy
+      if (meta && key === "c" && active && !editing) {
+        e.preventDefault();
+        clipboardRef.current = await active.clone();
+        return;
+      }
+      // Paste
+      if (meta && key === "v" && clipboardRef.current && !editing) {
+        e.preventDefault();
+        const clone = await clipboardRef.current.clone();
+        clone.set({ left: clone.left + 18, top: clone.top + 18 });
+        c.add(clone);
+        c.setActiveObject(clone);
+        c.requestRenderAll();
+        syncSel();
+        return;
+      }
+      // Duplicate
+      if (meta && key === "d" && active && !editing) {
+        e.preventDefault();
+        const clone = await active.clone();
+        clone.set({ left: active.left + 18, top: active.top + 18 });
+        c.add(clone);
+        c.setActiveObject(clone);
+        c.requestRenderAll();
+        syncSel();
+        return;
+      }
+      // Arrow-key nudge (1px, 10px with Shift)
+      if (active && !editing && e.key.startsWith("Arrow")) {
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
+        if (e.key === "ArrowLeft") active.set("left", active.left - step);
+        if (e.key === "ArrowRight") active.set("left", active.left + step);
+        if (e.key === "ArrowUp") active.set("top", active.top - step);
+        if (e.key === "ArrowDown") active.set("top", active.top + step);
+        active.setCoords();
+        c.requestRenderAll();
+        // Collapse a run of nudges into one history entry
+        clearTimeout(nudgeTimerRef.current);
+        nudgeTimerRef.current = setTimeout(() => snapshot(), 400);
       }
     };
     window.addEventListener("keydown", onKey);
     return () => {
       disposed = true;
+      clearTimeout(nudgeTimerRef.current);
       window.removeEventListener("keydown", onKey);
       canvas?.dispose();
       fabricRef.current = null;
@@ -481,14 +551,47 @@ export default function Page() {
     withSel((o, c) => {
       if (typeof c.sendObjectBackwards === "function") c.sendObjectBackwards(o);
     });
+  const alignObj = (mode) =>
+    withSel((o) => {
+      const b = o.getBoundingRect();
+      if (mode === "left") o.set("left", o.left + (g.trim.left - b.left));
+      if (mode === "hcenter")
+        o.set("left", o.left + (g.canvasW / 2 - (b.left + b.width / 2)));
+      if (mode === "right")
+        o.set("left", o.left + (g.trim.left + g.trim.width - (b.left + b.width)));
+      if (mode === "top") o.set("top", o.top + (g.trim.top - b.top));
+      if (mode === "vcenter")
+        o.set("top", o.top + (g.canvasH / 2 - (b.top + b.height / 2)));
+      if (mode === "bottom")
+        o.set("top", o.top + (g.trim.top + g.trim.height - (b.top + b.height)));
+      o.setCoords();
+    });
+  const toggleLock = () =>
+    withSel((o, c) => {
+      const lock = !o.lockMovementX;
+      o.set({
+        lockMovementX: lock,
+        lockMovementY: lock,
+        lockRotation: lock,
+        lockScalingX: lock,
+        lockScalingY: lock,
+        hasControls: !lock,
+      });
+      if (lock) c.discardActiveObject();
+    });
   const applyZoom = (z) => {
     const c = fabricRef.current;
     c.setZoom(z);
     c.setDimensions({ width: g.canvasW * z, height: g.canvasH * z });
     setZoom(z);
   };
-  const download = () => {
+  const download = async () => {
     const c = fabricRef.current;
+    if (typeof document !== "undefined" && document.fonts) {
+      try {
+        await document.fonts.ready;
+      } catch {}
+    }
     const pz = c.getZoom();
     c.setZoom(1);
     c.setDimensions({ width: g.canvasW, height: g.canvasH });
@@ -501,16 +604,18 @@ export default function Page() {
     a.click();
   };
   const switchSide = async (next) => {
-    if (next === side) return;
+    const cur = sideRef.current;
+    if (next === cur) return;
     const c = fabricRef.current;
-    sidesRef.current[side] = JSON.stringify(c.toJSON());
+    sidesRef.current[cur] = JSON.stringify(c.toJSON());
+    sideRef.current = next;
     setSide(next);
     historyRef.current = { stack: [], i: -1, muted: false };
     const target =
       sidesRef.current[next] ||
       (() => {
         try {
-          return localStorage.getItem(`design:${product.id}:${next}`);
+          return localStorage.getItem(lsKey(next));
         } catch {
           return null;
         }
@@ -887,6 +992,32 @@ export default function Page() {
                       className="w-full accent-[#0037CA]"
                     />
                   </Field>
+                  <Field
+                    label={`Letter spacing — ${Math.round(sel.charSpacing ?? 0)}`}
+                  >
+                    <input
+                      type="range"
+                      min="-100"
+                      max="800"
+                      step="10"
+                      value={sel.charSpacing ?? 0}
+                      onChange={(e) => setProp("charSpacing", +e.target.value)}
+                      className="w-full accent-[#0037CA]"
+                    />
+                  </Field>
+                  <Field
+                    label={`Line height — ${(sel.lineHeight ?? 1.16).toFixed(2)}`}
+                  >
+                    <input
+                      type="range"
+                      min="0.8"
+                      max="2.5"
+                      step="0.05"
+                      value={sel.lineHeight ?? 1.16}
+                      onChange={(e) => setProp("lineHeight", +e.target.value)}
+                      className="w-full accent-[#0037CA]"
+                    />
+                  </Field>
                   <div className="flex gap-1.5">
                     <IconToggle
                       active={sel.fontWeight === "bold"}
@@ -899,6 +1030,29 @@ export default function Page() {
                     >
                       <Bold className="h-4 w-4" />
                     </IconToggle>
+                    <IconToggle
+                      active={sel.fontStyle === "italic"}
+                      onClick={() =>
+                        setProp(
+                          "fontStyle",
+                          sel.fontStyle === "italic" ? "normal" : "italic",
+                        )
+                      }
+                    >
+                      <span className="font-serif text-[15px] italic leading-none">
+                        I
+                      </span>
+                    </IconToggle>
+                    <IconToggle
+                      active={!!sel.underline}
+                      onClick={() => setProp("underline", !sel.underline)}
+                    >
+                      <span className="text-[15px] leading-none underline">
+                        U
+                      </span>
+                    </IconToggle>
+                  </div>
+                  <div className="flex gap-1.5">
                     <IconToggle
                       active={sel.textAlign === "left"}
                       onClick={() => setProp("textAlign", "left")}
@@ -964,6 +1118,40 @@ export default function Page() {
               </Field>
               <div>
                 <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-[#475467]">
+                  <AlignCenter className="h-3.5 w-3.5" /> Align to card
+                </p>
+                <div className="flex gap-1.5">
+                  <AlignBtn onClick={() => alignObj("left")} label="Align left">
+                    <AlignLeft className="h-4 w-4" />
+                  </AlignBtn>
+                  <AlignBtn
+                    onClick={() => alignObj("hcenter")}
+                    label="Align horizontal center"
+                  >
+                    <AlignCenter className="h-4 w-4" />
+                  </AlignBtn>
+                  <AlignBtn onClick={() => alignObj("right")} label="Align right">
+                    <AlignRight className="h-4 w-4" />
+                  </AlignBtn>
+                  <AlignBtn onClick={() => alignObj("top")} label="Align top">
+                    <AlignLeft className="h-4 w-4 rotate-90" />
+                  </AlignBtn>
+                  <AlignBtn
+                    onClick={() => alignObj("vcenter")}
+                    label="Align vertical center"
+                  >
+                    <AlignCenter className="h-4 w-4 rotate-90" />
+                  </AlignBtn>
+                  <AlignBtn
+                    onClick={() => alignObj("bottom")}
+                    label="Align bottom"
+                  >
+                    <AlignRight className="h-4 w-4 rotate-90" />
+                  </AlignBtn>
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold text-[#475467]">
                   <Layers className="h-3.5 w-3.5" /> Arrange & actions
                 </p>
                 <div className="grid grid-cols-2 gap-2">
@@ -981,6 +1169,11 @@ export default function Page() {
                   <PanelBtn icon={Trash2} label="Delete" onClick={del} danger />
                   <PanelBtn icon={Layers} label="Group" onClick={groupSelection} />
                   <PanelBtn icon={Layers} label="Ungroup" onClick={ungroupSelection} />
+                  <PanelBtn
+                    icon={sel.locked ? Lock : Unlock}
+                    label={sel.locked ? "Unlock" : "Lock"}
+                    onClick={toggleLock}
+                  />
                 </div>
               </div>
             </div>
@@ -1130,6 +1323,18 @@ function IconToggle({ active, onClick, children }) {
     <button
       onClick={onClick}
       className={`grid h-9 flex-1 place-items-center rounded-lg border transition ${active ? "border-[#0037CA] bg-[#0037CA] text-white" : "border-slate-200 bg-white text-[#475467] hover:border-[#0037CA]"}`}
+    >
+      {children}
+    </button>
+  );
+}
+function AlignBtn({ onClick, label, children }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="grid h-9 flex-1 place-items-center rounded-lg border border-slate-200 bg-white text-[#475467] transition hover:border-[#0037CA] hover:text-[#0037CA]"
     >
       {children}
     </button>
