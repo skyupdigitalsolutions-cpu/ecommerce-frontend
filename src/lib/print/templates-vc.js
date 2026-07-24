@@ -1,3 +1,5 @@
+import { elegant, wellness } from "./templates-designer";
+
 export const VC_SCHEMES = [
   { id: "navy",   primary: "#0B2E59", accent: "#1E5DA8" },
   { id: "maroon", primary: "#7A1F2B", accent: "#B03A48" },
@@ -44,9 +46,8 @@ function monogram(s, g) {
 }
 
 export const VC_TEMPLATES = [
-  { id: "classic",  name: "Classic",  industry: "Corporate", build: classic },
-  { id: "banded",   name: "Banded",   industry: "Corporate", build: banded },
-  { id: "monogram", name: "Monogram", industry: "Creative",  build: monogram },
+  { id: "elegant",  name: "Elegant",  industry: "Creative",  doubleSided: true, buildSides: elegant },
+  { id: "wellness", name: "Wellness", industry: "Health",    doubleSided: true, buildSides: wellness },
 ];
 
 export function getVcTemplate(id) { return VC_TEMPLATES.find((t) => t.id === id) || VC_TEMPLATES[0]; }
