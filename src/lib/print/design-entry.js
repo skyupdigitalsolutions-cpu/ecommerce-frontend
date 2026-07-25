@@ -39,7 +39,8 @@ export function designEditorFor(product) {
   if (!product) return null;
   const base = CATEGORY_TO_EDITOR[product.category];
   if (!base) return null; // category not eligible — no entry point at all
-  const hay = `${product.slug || ""} ${product.title || ""} ${product.sub || ""}`.toLowerCase();
+  const hay =
+    `${product.slug || ""} ${product.title || ""} ${product.sub || ""}`.toLowerCase();
   for (const [re, id] of KEYWORD_TO_EDITOR) if (re.test(hay)) return id;
   return base;
 }
@@ -48,6 +49,22 @@ export function designEditorFor(product) {
 export function designHrefFor(product) {
   const id = designEditorFor(product);
   return id ? `/design/${id}` : null;
+}
+
+/* Where "Customize this product" should go.
+ * Eligible categories get the field-form flow, which asks for each field of the
+ * product and previews the result. Everything else keeps the existing mockup
+ * customizer at /customize/<slug>, unchanged. */
+export function customizeHrefFor(product) {
+  if (!product) return null;
+  const id = designEditorFor(product);
+  return id ? `/personalize/${id}` : `/customize/${product.slug}`;
+}
+
+/* True when the product routes to the field-form flow rather than the mockup
+ * customizer — handy for labelling the button differently. */
+export function usesFieldForm(product) {
+  return designEditorFor(product) !== null;
 }
 
 /* Exposed for tests / debugging. */

@@ -1,6 +1,5 @@
-/* Letterhead templates (A4, single-sided). Each build(scheme, g) returns a
- * fabric JSON scene. Positioning is safeBox-relative so it scales with the
- * product geometry. Same scheme shape as visiting cards: { id, primary, accent }. */
+import { EM, val, estTextWidth, fitFontSize } from "./text-fit";
+import { hasLogo, logoObject, logoInitial } from "./logo-slot";
 
 export const LH_SCHEMES = [
   { id: "navy", primary: "#0B2E59", accent: "#1E5DA8" },
@@ -29,10 +28,6 @@ const BODY =
 
 const path = (d, fill, opts) => ({ type: "path", path: d, fill, ...opts });
 
-/* fabric v7 defaults originX/originY to "center", so a bare { left, top } on a
- * rect is read as its centre point and the shape lands half its own size up and
- * to the left. Every rect goes through this helper to pin it to top-left, the
- * same way txt() already does for text. */
 const rect = (opts) => ({
   type: "rect",
   originX: "left",
@@ -40,8 +35,14 @@ const rect = (opts) => ({
   ...opts,
 });
 
-/* ---- Angular: navy + orange angular header/footer, two-tone wordmark, icon contacts ---- */
-function angular(s, g) {
+const splitWordmark = (name) => {
+  const parts = name.trim().split(/\s+/);
+  return parts.length > 1
+    ? { head: parts[0], tail: parts.slice(1).join(" ") }
+    : { head: parts[0] || "", tail: "" };
+};
+
+function angular(s, g, d) {
   const NAVY = s.primary,
     ORANGE = "#F2A93B";
   const tx = 0,
@@ -57,10 +58,31 @@ function angular(s, g) {
   const logoCx = tx + 34,
     logoCy = tT + hh * 0.42;
   const wordL = logoCx + logoR * 1.42 + 8;
-  const brandW = 74;
-  const nameL = wordL + brandW;
 
-  // Position icons near the right edge of the canvas
+  const logo = hasLogo(d);
+  const logoSlotL = g.trim.left + 4;
+  const logoSlotR = wordL - 8;
+  const logoImg = logoObject(d, {
+    cx: (logoSlotL + logoSlotR) / 2,
+    cy: logoCy,
+    w: Math.max(24, logoSlotR - logoSlotL),
+    h: logoR * 2.2,
+  });
+
+  const { head, tail } = splitWordmark(
+    val(d, "companyName", "BRAND NAME").toUpperCase(),
+  );
+  const wordmark = tail ? head + " " + tail : head;
+  const WORD_MAX_W = P(0.5) - wordL - 12;
+  const WORD_SIZE = fitFontSize(wordmark, WORD_MAX_W, 19, {
+    minSize: 9,
+    em: EM.upperBold,
+  });
+  const metrics = { em: EM.upperBold };
+  const brandW = Math.max(estTextWidth(head, WORD_SIZE, metrics), 20);
+  const nameL = wordL + brandW + WORD_SIZE * 0.3;
+  const wordEnd = nameL + estTextWidth(tail, WORD_SIZE, metrics);
+
   const iconSize = 18;
   const gap = 8;
   const rightPadding = 5;
@@ -72,12 +94,9 @@ function angular(s, g) {
   const contactW = icoL - gap - cL;
 
   const rowTops = [tT + 24, tT + 52, tT + 80];
-  // A 9.5px Arial line is ~11px tall, the icon chip is 18px. Lifting the chip by
-  // the difference centres it on its text line instead of hanging below it.
   const CONTACT_LINE_H = 11;
   const icoTop = (row) => row + (CONTACT_LINE_H - iconSize) / 2;
 
-  // Filled 16x16 glyphs
   const iconGlyph = (d, left, top) =>
     path(d, "#ffffff", {
       left: left + (iconSize - 16) / 2,
@@ -145,55 +164,63 @@ function angular(s, g) {
         ORANGE,
       ),
 
-      // Logo
-      rect({
-        left: logoCx,
-        top: logoCy,
-        width: logoR * 2,
-        height: logoR * 2,
-        angle: 45,
-        rx: 5,
-        ry: 5,
-        fill: ORANGE,
-        originX: "center",
-        originY: "center",
-      }),
-
-      txt("S", "#ffffff", {
-        left: logoCx - logoR,
-        top: logoCy - 12,
-        width: logoR * 2,
-        fontSize: 18,
-        fontWeight: "bold",
-        textAlign: "center",
-        fontFamily: "Arial",
-      }),
+      // Logo — uploaded artwork, else the diamond lettermark it replaces
+      ...(logo
+        ? [logoImg]
+        : [
+            rect({
+              left: logoCx,
+              top: logoCy,
+              width: logoR * 2,
+              height: logoR * 2,
+              angle: 45,
+              rx: 5,
+              ry: 5,
+              fill: ORANGE,
+              originX: "center",
+              originY: "center",
+            }),
+            txt(logoInitial(d, "S"), "#ffffff", {
+              left: logoCx - logoR,
+              top: logoCy - 12,
+              width: logoR * 2,
+              fontSize: 18,
+              fontWeight: "bold",
+              textAlign: "center",
+              fontFamily: "Arial",
+            }),
+          ]),
 
       // Brand name
-      txt("BRAND", "#ffffff", {
+      txt(head, "#ffffff", {
         left: wordL,
         top: tT + hh * 0.26,
         width: brandW,
-        fontSize: 19,
+        fontSize: WORD_SIZE,
         fontWeight: "bold",
         fontFamily: "Arial",
       }),
 
-      txt("NAME", ORANGE, {
+      txt(tail, ORANGE, {
         left: nameL,
         top: tT + hh * 0.26,
-        width: 70,
-        fontSize: 19,
+        width: Math.max(estTextWidth(tail, WORD_SIZE, metrics) + 4, 10),
+        fontSize: WORD_SIZE,
         fontWeight: "bold",
         fontFamily: "Arial",
       }),
 
       // Tagline
-      txt("Your Tagline Space", "#ffffff", {
+      txt(val(d, "tagline", "Your Tagline Space"), "#ffffff", {
         left: wordL,
         top: tT + hh * 0.63,
-        width: nameL + 70 - wordL,
-        fontSize: 9,
+        width: Math.max(wordEnd - wordL, 120),
+        fontSize: fitFontSize(
+          val(d, "tagline", "Your Tagline Space"),
+          Math.max(wordEnd - wordL, 120),
+          9,
+          { minSize: 6, em: EM.bold, charSpacing: 120 },
+        ),
         fontWeight: "bold",
         textAlign: "center",
         fontFamily: "Arial",
@@ -201,7 +228,7 @@ function angular(s, g) {
       }),
 
       // Contact details
-      txt("(+000) 123 456 7899", NAVY, {
+      txt(val(d, "phone", "(+000) 123 456 7899"), NAVY, {
         left: cL,
         top: rowTops[0],
         width: contactW,
@@ -210,7 +237,7 @@ function angular(s, g) {
         fontWeight: "bold",
       }),
 
-      txt("youremail@gmail.com", NAVY, {
+      txt(val(d, "email", "youremail@gmail.com"), NAVY, {
         left: cL,
         top: rowTops[1],
         width: contactW,
@@ -218,7 +245,7 @@ function angular(s, g) {
         fontFamily: "Arial",
       }),
 
-      txt("youraddressname here", NAVY, {
+      txt(val(d, "address", "youraddressname here"), NAVY, {
         left: cL,
         top: rowTops[2],
         width: contactW,
@@ -266,7 +293,7 @@ function angular(s, g) {
 }
 
 /* ---- Automotive: outlined shield lockup + top-right contact, header rule, bottom wave ---- */
-function automotive(s, g) {
+function automotive(s, g, d) {
   const L = g.trim.left,
     T = g.trim.top,
     W = g.trim.width;
@@ -290,44 +317,95 @@ function automotive(s, g) {
     `M ${bx} ${bb - 45} C ${bx + g.trim.width * 0.3} ${bb - 75}, ` +
     `${bx + g.trim.width * 0.58} ${bb - 10}, ${right} ${bb - 55} ` +
     `L ${right} ${bb} L ${bx} ${bb} Z`;
-  const ruleY = T + 78; // sits under the whole header lockup
+  // The company lockup under the shield can run to two or three lines once a
+  // real name replaces "CTS MOTORS", so the rule is pushed below whatever the
+  // lockup actually occupies instead of sitting at a fixed height.
+  const coName = val(d, "companyName", "CTS MOTORS").toUpperCase();
+  const coSize = fitFontSize(coName, colW, 13, {
+    minSize: 7,
+    lines: 2,
+    em: EM.upperBold,
+    charSpacing: 150,
+  });
+  const coLines = Math.min(
+    3,
+    Math.max(
+      1,
+      Math.ceil(
+        estTextWidth(coName, coSize, { em: EM.upperBold, charSpacing: 150 }) /
+          colW,
+      ),
+    ),
+  );
+  const autoLogo = hasLogo(d);
+  const autoLogoImg = logoObject(d, {
+    cx: L + colW / 2,
+    cy: ey + eh / 2,
+    // The shield gives way to the logo, so the slot is the full logo column
+    // rather than the narrow portrait emblem — a landscape logo would otherwise
+    // shrink to the shield's width and waste most of the space.
+    w: colW,
+    h: eh,
+  });
+  const lockupBottom = ey + eh + 6 + coLines * coSize * 1.3;
+  const ruleY = Math.max(T + 78, lockupBottom + 8); // sits under the whole header lockup
   return {
     version: "6.0.0",
     background: "#ffffff",
     objects: [
       path(grayWave, "#C4C7CF"),
       path(darkWave, s.primary),
-      path(shield, "transparent", { stroke: s.primary, strokeWidth: 3 }),
-      txt("A", s.primary, {
-        left: ex,
-        top: ey + 15,
-        width: ew,
-        fontSize: 24,
-        fontWeight: "bold",
-        textAlign: "center",
-        fontFamily: "Arial",
-      }),
-      txt("CTS MOTORS", s.primary, {
+      // Emblem — uploaded logo, else the outlined shield with its initial
+      ...(autoLogo
+        ? [autoLogoImg]
+        : [
+            path(shield, "transparent", { stroke: s.primary, strokeWidth: 3 }),
+            txt(logoInitial(d, "A"), s.primary, {
+              left: ex,
+              top: ey + 15,
+              width: ew,
+              fontSize: 24,
+              fontWeight: "bold",
+              textAlign: "center",
+              fontFamily: "Arial",
+            }),
+          ]),
+      txt(coName, s.primary, {
         left: L,
         top: ey + eh + 6,
         width: colW,
-        fontSize: 13,
+        fontSize: coSize,
         fontWeight: "bold",
         textAlign: "center",
         charSpacing: 150,
         fontFamily: "Arial",
       }),
-      txt("Company Name", "#111827", {
+      txt(val(d, "companyName", "Company Name"), "#111827", {
         left: L + W - 190,
         top: T + 2,
         width: 190,
-        fontSize: 10,
+        fontSize: fitFontSize(val(d, "companyName", "Company Name"), 190, 10, {
+          minSize: 7,
+          em: EM.bold,
+        }),
         fontWeight: "bold",
         textAlign: "right",
         fontFamily: "Arial",
       }),
       txt(
-        "A : 1000 S. Commons Drive\nUnit 102 PMB 241\nCity, ST 00000\nP : (000) 000-0000",
+        [
+          "A : " +
+            val(
+              d,
+              "address",
+              "1000 S. Commons Drive\nUnit 102 PMB 241\nCity, ST 00000",
+            ),
+          "P : " + val(d, "phone", "(000) 000-0000"),
+          val(d, "email", ""),
+          val(d, "website", ""),
+        ]
+          .filter(Boolean)
+          .join("\n"),
         "#374151",
         {
           left: L + W - 190,
@@ -351,7 +429,7 @@ function automotive(s, g) {
 }
 
 /* ---- Centred crest: outlined house mark, centred name + web, bracketed footer ---- */
-function crest(s, g) {
+function crest(s, g, d) {
   const L = g.trim.left,
     T = g.trim.top,
     W = g.trim.width,
@@ -363,29 +441,41 @@ function crest(s, g) {
   const footT = T + H * 0.86;
   const addrY = footT + 24;
   const ruleY = addrY + 6; // centred on the address line
+  // Crest has no initial, but a logo should still land somewhere on every layout
+  // the customer can pick — here it replaces the twin house outlines.
+  const crestLogo = hasLogo(d);
+  const crestLogoImg = logoObject(d, { cx: cx, cy: T + 16, w: 90, h: 34 });
   return {
     version: "6.0.0",
     background: "#ffffff",
     objects: [
-      path(house(cx - 21), "transparent", {
-        stroke: s.accent,
-        strokeWidth: 2.5,
-      }),
-      path(house(cx - 9), "transparent", {
-        stroke: s.primary,
-        strokeWidth: 2.5,
-      }),
-      txt("COMPANY NAME", s.primary, {
+      ...(crestLogo
+        ? [crestLogoImg]
+        : [
+            path(house(cx - 21), "transparent", {
+              stroke: s.accent,
+              strokeWidth: 2.5,
+            }),
+            path(house(cx - 9), "transparent", {
+              stroke: s.primary,
+              strokeWidth: 2.5,
+            }),
+          ]),
+      txt(val(d, "companyName", "COMPANY NAME").toUpperCase(), s.primary, {
         left: L,
         top: T + 46,
         width: W,
-        fontSize: 16,
+        fontSize: fitFontSize(val(d, "companyName", "COMPANY NAME"), W, 16, {
+          minSize: 9,
+          em: EM.upperBold,
+          charSpacing: 200,
+        }),
         fontWeight: "bold",
         textAlign: "center",
         charSpacing: 200,
         fontFamily: "Arial",
       }),
-      txt("www.yourcompany.com", "#6B7280", {
+      txt(val(d, "website", "www.yourcompany.com"), "#6B7280", {
         left: L,
         top: T + 70,
         width: W,
@@ -394,7 +484,7 @@ function crest(s, g) {
         textAlign: "center",
         fontFamily: "Arial",
       }),
-      txt("Phone: +00-000-0000", "#111827", {
+      txt("Phone: " + val(d, "phone", "+00-000-0000"), "#111827", {
         left: L,
         top: footT,
         width: W,
@@ -403,15 +493,20 @@ function crest(s, g) {
         textAlign: "center",
         fontFamily: "Arial",
       }),
-      txt("Address: 000 Street, City, ST 00000", "#111827", {
-        left: L,
-        top: addrY,
-        width: W,
-        fontSize: 10,
-        fontWeight: "bold",
-        textAlign: "center",
-        fontFamily: "Arial",
-      }),
+      txt(
+        "Address: " +
+          val(d, "address", "000 Street, City, ST 00000").replace(/\n/g, ", "),
+        "#111827",
+        {
+          left: L,
+          top: addrY,
+          width: W,
+          fontSize: 10,
+          fontWeight: "bold",
+          textAlign: "center",
+          fontFamily: "Arial",
+        },
+      ),
       rect({
         left: L,
         top: ruleY,
@@ -426,7 +521,7 @@ function crest(s, g) {
         height: 1,
         fill: s.accent,
       }),
-      txt("Email: hello@yourcompany.com", "#111827", {
+      txt("Email: " + val(d, "email", "hello@yourcompany.com"), "#111827", {
         left: L,
         top: footT + 48,
         width: W,

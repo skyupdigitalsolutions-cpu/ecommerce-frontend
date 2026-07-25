@@ -14,7 +14,11 @@ import UploadDesignModal from "../../../components/product/UploadDesignModal";
 import RelatedProducts from "../../../components/product/RelatedProducts";
 import { useCart } from "../../../lib/cart";
 import SaveButton from "../../../components/product/SaveButton";
-import { designHrefFor } from "../../../lib/print/design-entry";
+import {
+  designHrefFor,
+  customizeHrefFor,
+  usesFieldForm,
+} from "../../../lib/print/design-entry";
 
 const COLORS = [
   { name: "Black", hex: "#1F2937" },
@@ -125,6 +129,10 @@ export default function Page() {
   // print editor (visiting cards, stationery, signs & posters, labels &
   // packaging). designHrefFor returns null for everything else, which hides it.
   const designHref = designHrefFor(product);
+  // Eligible categories customize by filling in the product's fields; everything
+  // else keeps the existing /customize/<slug> mockup flow untouched.
+  const customizeHref = customizeHrefFor(product);
+  const fieldForm = usesFieldForm(product);
 
   if (!product) {
     return (
@@ -286,12 +294,14 @@ export default function Page() {
               >
                 <UploadCloud className="h-5 w-5" /> Upload design
               </button>
-              {product.customizable && (
+              {(product.customizable || fieldForm) && customizeHref && (
                 <a
-                  href={`/customize/${product.slug}`}
+                  href={customizeHref}
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0037CA] py-3.5 text-[15px] font-semibold text-white transition hover:bg-black"
                 >
-                  Customize this product
+                  {fieldForm
+                    ? "Customize with your details"
+                    : "Customize this product"}
                 </a>
               )}
 

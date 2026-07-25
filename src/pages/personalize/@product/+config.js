@@ -1,0 +1,1 @@
+export default { ssr: false }; // fabric.js preview is client-only
