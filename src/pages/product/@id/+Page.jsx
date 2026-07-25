@@ -120,6 +120,13 @@ export default function Page() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [design, setDesign] = useState(null);
 
+  // Route "Design from scratch" to the matching print editor when we have one.
+  const designProduct = (() => {
+    const hay = `${product?.category || ""} ${product?.slug || ""} ${product?.title || ""}`.toLowerCase();
+    if (hay.includes("letterhead")) return "letterhead";
+    return "visiting-card";
+  })();
+
   if (!product) {
     return (
       <section className="mx-auto max-w-[1400px] px-5 py-24 text-center">
@@ -254,7 +261,7 @@ export default function Page() {
               </div>
               <div className="">
                 <a
-                  href="/design/visiting-card"
+                  href={`/design/${designProduct}`}
                   className="flex w-full items-center px-4 justify-center gap-2 rounded-lg bg-[#0037CA] py-3.5 text-[15px] font-semibold text-white transition hover:bg-black"
                 >
                   Design from scratch

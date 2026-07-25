@@ -28,12 +28,7 @@ import {
   Unlock,
 } from "lucide-react";
 import { getPrintProduct, geometry } from "../../../lib/print/products";
-import {
-  getVcTemplate,
-  getVcScheme,
-  VC_SCHEMES,
-  VC_TEMPLATES,
-} from "../../../lib/print/templates-vc";
+import { templateSet } from "../../../lib/print/templates";
 import { useTemplateThumbs } from "../../../lib/print/useTemplateThumbs";
 import {
   makeWave,
@@ -74,6 +69,11 @@ export default function Page() {
   const { routeParams, urlParsed } = usePageContext();
   const product = getPrintProduct(routeParams.product);
   const templateId = urlParsed?.search?.template || null;
+  const set = templateSet(product?.id);
+  const TEMPLATES = set.templates;
+  const SCHEMES = set.schemes;
+  const getTpl = set.getTemplate;
+  const getSch = set.getScheme;
 
   const elRef = useRef(null);
   const fabricRef = useRef(null);
@@ -90,7 +90,9 @@ export default function Page() {
   const [sel, setSel] = useState(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
-  const [schemeId, setSchemeId] = useState(urlParsed?.search?.scheme || "navy");
+  const [schemeId, setSchemeId] = useState(
+    urlParsed?.search?.scheme || set.defaultScheme,
+  );
   const [galleryOpen, setGalleryOpen] = useState(false);
 
   const g = product ? geometry(product) : null;
@@ -176,7 +178,7 @@ export default function Page() {
   };
 
   const loadTemplate = async (tplId, schemeIdArg) => {
-    const tpl = getVcTemplate(tplId);
+    const tpl = getTpl(tplId);
     sidesRef.current = { front: null, back: null };
     try {
       localStorage.removeItem(lsKey("front"));
@@ -199,7 +201,7 @@ export default function Page() {
       sideRef.current = "front";
       setSide("front");
       await applyJson(
-        JSON.stringify(tpl.build(getVcScheme(schemeIdArg || schemeId), g)),
+        JSON.stringify(tpl.build(getSch(schemeIdArg || schemeId), g)),
       );
       setSchemeId(schemeIdArg || schemeId);
     }
@@ -632,9 +634,9 @@ export default function Page() {
   const applyScheme = async (id) => {
     setSchemeId(id);
     if (!templateId) return;
-    const tpl = getVcTemplate(templateId);
+    const tpl = getTpl(templateId);
     if (tpl.doubleSided) return;
-    await applyJson(JSON.stringify(tpl.build(getVcScheme(id), g)));
+    await applyJson(JSON.stringify(tpl.build(getSch(id), g)));
     snapshot();
   };
   const useTemplate = async (tplId, schemeIdArg) => {
@@ -659,7 +661,7 @@ export default function Page() {
     <div className="flex h-screen flex-col bg-[#EEF0F4]">
       <header className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-2.5 shadow-sm">
         <a
-          href="/category/visiting-cards"
+          href={product.backHref || "/"}
           className="grid h-9 w-9 place-items-center rounded-lg text-[#475467] transition hover:bg-slate-100"
           aria-label="Back"
         >
@@ -727,10 +729,10 @@ export default function Page() {
 
       <div className="flex flex-1 overflow-hidden">
         <aside className="w-60 flex-none space-y-6 overflow-y-auto border-r border-slate-200 bg-white p-4">
-          {templateId && !getVcTemplate(templateId)?.doubleSided && (
+          {templateId && !getTpl(templateId)?.doubleSided && (
             <Section icon={Palette} title="Colour scheme">
               <div className="flex flex-wrap gap-2">
-                {VC_SCHEMES.map((s) => (
+                {SCHEMES.map((s) => (
                   <button
                     key={s.id}
                     onClick={() => applyScheme(s.id)}
@@ -1203,7 +1205,7 @@ export default function Page() {
               Choose a template to start editing.
             </p>
             <div className="grid grid-cols-2 gap-4">
-              {VC_TEMPLATES.map((t) => (
+              {TEMPLATES.map((t) => (
                 <div
                   key={t.id}
                   className="rounded-xl border border-slate-200 p-3"
@@ -1216,10 +1218,18 @@ export default function Page() {
                       <img
                         src={thumbs[t.id]}
                         alt={t.name}
-                        className="aspect-[95/60] w-full object-cover"
+                        className="w-full object-cover"
+                        style={{
+                          aspectRatio: `${product.widthMm} / ${product.heightMm}`,
+                        }}
                       />
                     ) : (
-                      <div className="flex aspect-[95/60] items-center justify-center text-[13px] font-semibold text-[#475467]">
+                      <div
+                        className="flex items-center justify-center text-[13px] font-semibold text-[#475467]"
+                        style={{
+                          aspectRatio: `${product.widthMm} / ${product.heightMm}`,
+                        }}
+                      >
                         {t.name}
                       </div>
                     )}
@@ -1229,7 +1239,7 @@ export default function Page() {
                   </p>
                   {!t.doubleSided && (
                     <div className="mt-1 flex gap-1.5">
-                      {VC_SCHEMES.map((s) => (
+                      {SCHEMES.map((s) => (
                         <button
                           key={s.id}
                           onClick={() => useTemplate(t.id, s.id)}
