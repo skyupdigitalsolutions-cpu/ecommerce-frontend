@@ -14,6 +14,7 @@ import UploadDesignModal from "../../../components/product/UploadDesignModal";
 import RelatedProducts from "../../../components/product/RelatedProducts";
 import { useCart } from "../../../lib/cart";
 import SaveButton from "../../../components/product/SaveButton";
+import { designHrefFor } from "../../../lib/print/design-entry";
 
 const COLORS = [
   { name: "Black", hex: "#1F2937" },
@@ -120,12 +121,10 @@ export default function Page() {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [design, setDesign] = useState(null);
 
-  // Route "Design from scratch" to the matching print editor when we have one.
-  const designProduct = (() => {
-    const hay = `${product?.category || ""} ${product?.slug || ""} ${product?.title || ""}`.toLowerCase();
-    if (hay.includes("letterhead")) return "letterhead";
-    return "visiting-card";
-  })();
+  // "Design from scratch" is only offered for categories that have a matching
+  // print editor (visiting cards, stationery, signs & posters, labels &
+  // packaging). designHrefFor returns null for everything else, which hides it.
+  const designHref = designHrefFor(product);
 
   if (!product) {
     return (
@@ -259,14 +258,16 @@ export default function Page() {
               <div className="mt-2 gap-2 px-3 rounded flex justify-center items-center">
                 <SaveButton product={product} /> Save the Item
               </div>
-              <div className="">
-                <a
-                  href={`/design/${designProduct}`}
-                  className="flex w-full items-center px-4 justify-center gap-2 rounded-lg bg-[#0037CA] py-3.5 text-[15px] font-semibold text-white transition hover:bg-black"
-                >
-                  Design from scratch
-                </a>
-              </div>
+              {designHref && (
+                <div className="">
+                  <a
+                    href={designHref}
+                    className="flex w-full items-center px-4 justify-center gap-2 rounded-lg bg-[#0037CA] py-3.5 text-[15px] font-semibold text-white transition hover:bg-black"
+                  >
+                    Design from scratch
+                  </a>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex gap-2">

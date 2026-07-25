@@ -322,6 +322,9 @@ export default function Page() {
 
   const loadTemplate = async (tplId, schemeIdArg) => {
     const tpl = getTpl(tplId);
+    // Products without a template set (poster, label) resolve to null, as does a
+    // hand-typed ?template= id — start blank instead of throwing.
+    if (!tpl) return;
     sidesRef.current = { front: null, back: null };
     try {
       localStorage.removeItem(lsKey("front"));
@@ -950,12 +953,14 @@ export default function Page() {
           </p>
         </div>
         <div className="mx-3 h-7 w-px bg-slate-200" />
-        <button
-          onClick={() => setGalleryOpen(true)}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] font-semibold text-[#0F1729] transition hover:border-[#0037CA] hover:text-[#0037CA]"
-        >
-          <Layers className="h-4 w-4" /> Templates
-        </button>
+        {TEMPLATES.length > 0 && (
+          <button
+            onClick={() => setGalleryOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-1.5 text-[13px] font-semibold text-[#0F1729] transition hover:border-[#0037CA] hover:text-[#0037CA]"
+          >
+            <Layers className="h-4 w-4" /> Templates
+          </button>
+        )}
         <div className="flex items-center rounded-xl bg-slate-100 p-1">
           <IconBtn onClick={undo} disabled={!canUndo} label="Undo">
             <Undo2 className="h-4 w-4" />
@@ -1487,8 +1492,16 @@ export default function Page() {
               </button>
             </div>
             <p className="mb-4 text-[14px] text-[#667085]">
-              Choose a template to start editing.
+              {TEMPLATES.length
+                ? "Choose a template to start editing."
+                : `No ready-made templates for ${product.name} yet.`}
             </p>
+            {TEMPLATES.length === 0 && (
+              <div className="rounded-xl border border-dashed border-slate-200 p-8 text-center text-[13px] text-[#98A2B3]">
+                Start from the blank {product.widthMm}×{product.heightMm} mm
+                canvas and add text, shapes or an image from the left panel.
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               {TEMPLATES.map((t) => (
                 <div

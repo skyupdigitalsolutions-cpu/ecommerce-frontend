@@ -28,7 +28,33 @@ export const PRINT_PRODUCTS = {
     backHref: "/category/stationery-letterhead-and-notebooks",
     screenScale: 2.3,      // A4 would be huge at scale 6 — shrink to fit the editor
   },
-  // future: sticker, standee, banner, brochure …
+  "poster": {
+    id: "poster",
+    name: "Poster",
+    widthMm: 297,          // A3 portrait — change if your house default differs
+    heightMm: 420,
+    bleedMm: 3,
+    safeMm: 10,
+    dpi: 300,
+    sides: ["front"],      // single-sided
+    background: "#ffffff",
+    backHref: "/category/signs-posters-and-marketing-materials",
+    screenScale: 1.6,      // A3 at scale 6 would be ~2500px — shrink to fit
+  },
+  "label": {
+    id: "label",
+    name: "Label / Sticker",
+    widthMm: 100,          // a common rectangular product label
+    heightMm: 70,
+    bleedMm: 2,            // labels are die-cut, so a tighter bleed
+    safeMm: 4,
+    dpi: 300,
+    sides: ["front"],
+    background: "#ffffff",
+    backHref: "/category/labels-stickers-and-packaging",
+    screenScale: 5,
+  },
+  // future: standee, banner, brochure …
 };
 
 export function getPrintProduct(id) {

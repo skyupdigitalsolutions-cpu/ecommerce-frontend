@@ -9,6 +9,18 @@ import {
   LH_TEMPLATES, LH_SCHEMES, getLhTemplate, getLhScheme,
 } from "./templates-letterhead";
 
+/* Products with an editor but no ready-made templates yet. Without an explicit
+ * entry they would fall through to FALLBACK and be offered visiting-card
+ * templates, which are drawn for an 89x54mm canvas and look wrong anywhere else.
+ * The editor hides its Templates button when this list is empty. */
+const NO_TEMPLATES = {
+  templates: [],
+  schemes: VC_SCHEMES,
+  getTemplate: () => null,
+  getScheme: getVcScheme,
+  defaultScheme: "navy",
+};
+
 const REGISTRY = {
   "visiting-card": {
     templates: VC_TEMPLATES,
@@ -24,6 +36,8 @@ const REGISTRY = {
     getScheme: getLhScheme,
     defaultScheme: "navy",
   },
+  "poster": NO_TEMPLATES,
+  "label": NO_TEMPLATES,
 };
 
 const FALLBACK = REGISTRY["visiting-card"];
