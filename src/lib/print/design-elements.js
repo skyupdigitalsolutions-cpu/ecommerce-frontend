@@ -17,6 +17,8 @@ export function makeCornerBand(fabric, g, fill = "#2E7D6E") {
   return new Rect({
     left: g.trim.left, top: g.trim.top,
     width: g.trim.width, height: g.trim.height * 0.62,
+    // fabric v7 origin default is centre; these coords mean top-left.
+    originX: "left", originY: "top",
     fill, selectable: true,
   });
 }
@@ -25,16 +27,19 @@ export function makeDivider(fabric, g, fill = "#C9A94E") {
   const { Rect } = fabric;
   return new Rect({
     left: g.trim.left + g.trim.width / 2, top: g.trim.top + g.trim.height * 0.2,
-    width: 2, height: g.trim.height * 0.6, fill, selectable: true,
+    width: 2, height: g.trim.height * 0.6,
+    // centred horizontally on purpose, but the top edge is a top edge.
+    originX: "center", originY: "top",
+    fill, selectable: true,
   });
 }
 
 export function makeIconRow(fabric, g, label, glyph, color = "#2E7D6E") {
   const { Group, Circle, Textbox } = fabric;
   const dot = new Circle({ radius: 9, left: 0, top: 0, fill: color, originX: "center", originY: "center" });
-  const ic = new Textbox(glyph, { left: -6, top: -7, width: 14, fontSize: 10, fill: "#fff", textAlign: "center", fontFamily: "Arial" });
-  const tx = new Textbox(label, { left: 18, top: -8, width: 160, fontSize: 12, fill: "#333", fontFamily: "Arial" });
-  return new Group([dot, ic, tx], { left: g.safeBox.left, top: g.safeBox.top + g.safeBox.height / 2 });
+  const ic = new Textbox(glyph, { left: -6, top: -7, width: 14, fontSize: 10, fill: "#fff", textAlign: "center", fontFamily: "Arial", originX: "left", originY: "top" });
+  const tx = new Textbox(label, { left: 18, top: -8, width: 160, fontSize: 12, fill: "#333", fontFamily: "Arial", originX: "left", originY: "top" });
+  return new Group([dot, ic, tx], { left: g.safeBox.left, top: g.safeBox.top + g.safeBox.height / 2, originX: "left", originY: "top" });
 }
 
 export async function makeQR(fabric, g, text = "https://example.com") {

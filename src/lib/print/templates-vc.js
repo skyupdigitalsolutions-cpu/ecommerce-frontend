@@ -9,16 +9,21 @@ export const VC_SCHEMES = [
 ];
 
 const txt = (t, fill, opts) => ({ type: "textbox", text: t, fontFamily: "Georgia", fill, originX: "left", originY: "top", ...opts });
+/* fabric v7 defaults originX/originY to "center", so a bare { left, top } on a
+ * rect is read as its centre point and the shape lands half its own size up and
+ * to the left. Every rect goes through this helper to pin it to top-left, the
+ * same way txt() already does for text. */
+const rect = (opts) => ({ type: "rect", originX: "left", originY: "top", ...opts });
 
 function classic(s, g) {
   const L = g.safeBox.left, T = g.safeBox.top, W = g.safeBox.width, H = g.safeBox.height;
   return { version: "6.0.0", background: "#ffffff", objects: [
-    { type: "rect", left: L, top: T, width: 70, height: 70, fill: "#E5E7EB", rx: 4, ry: 4 },
+    rect({ left: L, top: T, width: 70, height: 70, fill: "#E5E7EB", rx: 4, ry: 4 }),
     txt("Company Name", s.accent, { left: L + 85, top: T + 4, width: W - 85, fontSize: 26, fontWeight: "bold" }),
     txt("Company Message", s.primary, { left: L + 85, top: T + 36, width: W - 85, fontSize: 13 }),
     txt("Full Name", s.primary, { left: L, top: T + H * 0.38, width: W, fontSize: 20, fontWeight: "bold", textAlign: "right" }),
     txt("Job Title", s.accent, { left: L, top: T + H * 0.38 + 26, width: W, fontSize: 13, textAlign: "right" }),
-    { type: "rect", left: L, top: T + H * 0.62, width: W, height: 4, fill: s.primary, rx: 2, ry: 2 },
+    rect({ left: L, top: T + H * 0.62, width: W, height: 4, fill: s.primary, rx: 2, ry: 2 }),
     txt("Address Line 1", s.primary, { left: L, top: T + H * 0.70, width: W * 0.6, fontSize: 12 }),
     txt("Phone / Other", s.accent, { left: L + W * 0.55, top: T + H * 0.78, width: W * 0.45, fontSize: 12, textAlign: "right" }),
   ]};
@@ -26,7 +31,7 @@ function classic(s, g) {
 function banded(s, g) {
   const L = g.safeBox.left, T = g.safeBox.top, W = g.safeBox.width, H = g.safeBox.height;
   return { version: "6.0.0", background: "#ffffff", objects: [
-    { type: "rect", left: g.trim.left, top: g.trim.top, width: g.trim.width, height: H * 0.42 + g.safe, fill: s.primary },
+    rect({ left: g.trim.left, top: g.trim.top, width: g.trim.width, height: H * 0.42 + g.safe, fill: s.primary }),
     txt("COMPANY NAME", "#ffffff", { left: L, top: T + 10, width: W, fontSize: 24, fontWeight: "bold", fontFamily: "Arial" }),
     txt("Web / Other", "#ffffff", { left: L, top: T + 40, width: W, fontSize: 12, fontFamily: "Arial" }),
     txt("FULL NAME", s.primary, { left: L, top: T + H * 0.55, width: W, fontSize: 18, fontWeight: "bold", fontFamily: "Arial" }),

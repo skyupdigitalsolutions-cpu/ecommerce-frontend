@@ -1,4 +1,9 @@
 const txt = (t, fill, opts) => ({ type: "textbox", text: t, fill, originX: "left", originY: "top", ...opts });
+/* fabric v7 defaults originX/originY to "center", so a bare { left, top } on a
+ * rect is read as its centre point and the shape lands half its own size up and
+ * to the left. Every rect goes through this helper to pin it to top-left, the
+ * same way txt() already does for text. */
+const rect = (opts) => ({ type: "rect", originX: "left", originY: "top", ...opts });
 
 /* ---- Elegant (maroon + cream, script flourish) ---- */
 export function elegant(g) {
@@ -22,7 +27,7 @@ export function elegant(g) {
         txt("+962 7 88898722", MAROON, { left: L + W * 0.30, top: T + H * 0.52, width: W * 0.7, fontSize: 13, fontFamily: "Georgia", textAlign: "right" }),
         txt("linaharb297@gmail.com", MAROON, { left: L + W * 0.30, top: T + H * 0.52 + 22, width: W * 0.7, fontSize: 13, fontFamily: "Georgia", textAlign: "right" }),
         txt("lina_harb7", MAROON, { left: L + W * 0.30, top: T + H * 0.52 + 44, width: W * 0.7, fontSize: 13, fontFamily: "Georgia", textAlign: "right" }),
-        { type: "rect", left: L, top: T + H * 0.62, width: 64, height: 64, fill: "#E5D7B8", rx: 4, ry: 4 },
+        rect({ left: L, top: T + H * 0.62, width: 64, height: 64, fill: "#E5D7B8", rx: 4, ry: 4 }),
         txt("QR / Logo", MAROON, { left: L, top: T + H * 0.62 + 24, width: 64, fontSize: 8, textAlign: "center", fontFamily: "Georgia" }),
         txt("Freelancer Lina Harb", MAROON, { left: L, top: T + H * 0.62 + 70, width: 90, fontSize: 8, textAlign: "center", fontFamily: "Georgia" }),
       ],
@@ -41,7 +46,7 @@ export function wellness(g) {
         { type: "circle", left: L + W / 2, top: T + H * 0.30, radius: 26, originX: "center", originY: "center", fill: "transparent", stroke: OFF, strokeWidth: 2 },
         txt("Lilian Botelho Marques", OFF, { left: L, top: T + H * 0.52, width: W, fontSize: 24, fontFamily: "Georgia", textAlign: "center" }),
         txt("PSICÓLOGA CLÍNICA", OFF, { left: L, top: T + H * 0.52 + 30, width: W, fontSize: 10, fontFamily: "Georgia", textAlign: "center", charSpacing: 400 }),
-        { type: "rect", left: L + W * 0.15, top: T + H * 0.72, width: W * 0.7, height: 2, fill: GOLD },
+        rect({ left: L + W * 0.15, top: T + H * 0.72, width: W * 0.7, height: 2, fill: GOLD }),
       ],
     },
     back: {
@@ -57,7 +62,7 @@ export function wellness(g) {
         { type: "circle", left: L + 8, top: T + H * 0.42 + 28, radius: 7, originX: "center", originY: "center", fill: SAGE },
         { type: "circle", left: L + 8, top: T + H * 0.42 + 50, radius: 7, originX: "center", originY: "center", fill: SAGE },
         { type: "circle", left: L + 8, top: T + H * 0.42 + 72, radius: 7, originX: "center", originY: "center", fill: SAGE },
-        { type: "rect", left: L + W * 0.6, top: T + H * 0.55, width: 52, height: 52, fill: "#E7E4D6", rx: 3, ry: 3 },
+        rect({ left: L + W * 0.6, top: T + H * 0.55, width: 52, height: 52, fill: "#E7E4D6", rx: 3, ry: 3 }),
         txt("QR", SAGE, { left: L + W * 0.6, top: T + H * 0.55 + 20, width: 52, fontSize: 9, textAlign: "center", fontFamily: "Georgia" }),
       ],
     },

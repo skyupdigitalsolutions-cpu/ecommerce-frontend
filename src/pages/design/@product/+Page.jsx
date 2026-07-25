@@ -13,6 +13,7 @@ import {
   Redo2,
   ZoomIn,
   ZoomOut,
+  Maximize2,
   Download,
   Bold,
   AlignLeft,
@@ -83,10 +84,16 @@ export default function Page() {
   const clipboardRef = useRef(null);
   const nudgeTimerRef = useRef(null);
   const sideRef = useRef("front");
+  const stageRef = useRef(null); // the scrollless viewport that holds the canvas
+  const clipRef = useRef(null); // page-shaped clip so nothing paints outside the sheet
+  const panRef = useRef({ active: false, spaceDown: false, x: 0, y: 0 });
 
   const [ready, setReady] = useState(false);
   const [side, setSide] = useState("front");
-  const [zoom, setZoom] = useState(1);
+  // view = the canvas viewportTransform mirrored into React so the page
+  // shadow underneath the canvas can follow the zoom/pan.
+  const [view, setView] = useState({ zoom: 1, x: 0, y: 0 });
+  const zoom = view.zoom;
   const [sel, setSel] = useState(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
@@ -98,6 +105,141 @@ export default function Page() {
   const g = product ? geometry(product) : null;
   const thumbs = useTemplateThumbs(product, schemeId);
   const lsKey = (s) => `design:${product?.id}:v2:${s}`;
+
+  /* ---------------------------------------------------------------------
+   * Viewport: zoom + pan
+   * The canvas element always fills the stage; zoom and pan live in fabric's
+   * viewportTransform instead of resizing the canvas. That is what makes it
+   * possible to magnify any part of the sheet (and stay sharp doing it) —
+   * scaling the element would only rasterise bigger pixels.
+   * ------------------------------------------------------------------- */
+  const MIN_Z = 0.1;
+  const MAX_Z = 8;
+  const EDGE = 80; // px of the sheet that must always stay on screen
+
+  // Mirror the live viewportTransform into React state.
+  const commitView = useCallback(() => {
+    const c = fabricRef.current;
+    if (!c) return;
+    const v = c.viewportTransform;
+    setView({ zoom: v[0], x: v[4], y: v[5] });
+  }, []);
+
+  // Keep the sheet reachable: centre it on an axis where it fits, and stop the
+  // pan before it can be flung entirely out of the stage on an axis where it doesn't.
+  const clampPan = useCallback(() => {
+    const c = fabricRef.current;
+    if (!c || !g) return;
+    const v = [...c.viewportTransform];
+    const z = v[0];
+    const pw = g.canvasW * z;
+    const ph = g.canvasH * z;
+    const vw = c.getWidth();
+    const vh = c.getHeight();
+    v[4] =
+      pw <= vw
+        ? (vw - pw) / 2
+        : Math.min(EDGE, Math.max(vw - pw - EDGE, v[4]));
+    v[5] =
+      ph <= vh
+        ? (vh - ph) / 2
+        : Math.min(EDGE, Math.max(vh - ph - EDGE, v[5]));
+    c.setViewportTransform(v);
+  }, [g]);
+
+  // Zoom anchored on a stage point (the cursor for wheel, the middle for buttons)
+  // so the pixel under the pointer stays put.
+  const zoomAt = useCallback(
+    (next, point) => {
+      const c = fabricRef.current;
+      if (!c) return;
+      const z = Math.min(MAX_Z, Math.max(MIN_Z, next));
+      const p = point || { x: c.getWidth() / 2, y: c.getHeight() / 2 };
+      c.zoomToPoint(p, z);
+      clampPan();
+      c.requestRenderAll();
+      commitView();
+    },
+    [clampPan, commitView],
+  );
+
+  const applyZoom = (z) => zoomAt(z, null);
+
+  const fitToStage = useCallback(() => {
+    const c = fabricRef.current;
+    const el = stageRef.current;
+    if (!c || !el || !g) return;
+    const pad = 48;
+    const vw = el.clientWidth;
+    const vh = el.clientHeight;
+    if (!vw || !vh) return;
+    const z = Math.min(
+      MAX_Z,
+      Math.max(MIN_Z, Math.min((vw - pad * 2) / g.canvasW, (vh - pad * 2) / g.canvasH)),
+    );
+    c.setViewportTransform([
+      z,
+      0,
+      0,
+      z,
+      (vw - g.canvasW * z) / 2,
+      (vh - g.canvasH * z) / 2,
+    ]);
+    c.requestRenderAll();
+    commitView();
+  }, [g, commitView]);
+
+  // Canvas element tracks the stage box; the sheet keeps its place inside it.
+  const syncStageSize = useCallback(() => {
+    const c = fabricRef.current;
+    const el = stageRef.current;
+    if (!c || !el) return;
+    const w = el.clientWidth;
+    const h = el.clientHeight;
+    if (!w || !h) return;
+    c.setDimensions({ width: w, height: h });
+    clampPan();
+    c.requestRenderAll();
+    commitView();
+  }, [clampPan, commitView]);
+
+  const panBy = useCallback(
+    (dx, dy) => {
+      const c = fabricRef.current;
+      if (!c) return;
+      const v = [...c.viewportTransform];
+      v[4] += dx;
+      v[5] += dy;
+      c.setViewportTransform(v);
+      clampPan();
+      c.requestRenderAll();
+      commitView();
+    },
+    [clampPan, commitView],
+  );
+
+  // The clip is what keeps the white sheet (and everything on it) from bleeding
+  // across the whole stage now that the canvas element is stage-sized.
+  // loadFromJSON drops canvas-level clipPath, so this is re-applied after loads.
+  const ensurePageClip = useCallback(() => {
+    const c = fabricRef.current;
+    if (!c || !g) return;
+    const fabric = c.__fabric;
+    if (!fabric) return;
+    if (!clipRef.current) {
+      clipRef.current = new fabric.Rect({
+        left: 0,
+        top: 0,
+        width: g.canvasW,
+        height: g.canvasH,
+        originX: "left",
+        originY: "top",
+        absolutePositioned: true,
+        excludeFromExport: true,
+      });
+    }
+    c.clipPath = clipRef.current;
+  }, [g]);
 
   const syncSel = useCallback(() => {
     const o = fabricRef.current?.getActiveObject();
@@ -151,13 +293,14 @@ export default function Page() {
       historyRef.current.muted = true;
       try {
         await c.loadFromJSON(json);
+        ensurePageClip();
         drawGuides();
         c.requestRenderAll();
       } finally {
         historyRef.current.muted = false;
       }
     },
-    [drawGuides],
+    [drawGuides, ensurePageClip],
   );
 
   const undo = () => {
@@ -212,19 +355,27 @@ export default function Page() {
     if (!product) return;
     let disposed = false;
     let canvas;
+    let ro;
+    const cleanupRef = { current: null };
     (async () => {
       const fabric = await import("fabric");
       if (disposed || !elRef.current) return;
       const { Canvas } = fabric;
       canvas = new Canvas(elRef.current, {
-        width: g.canvasW,
-        height: g.canvasH,
+        width: stageRef.current?.clientWidth || g.canvasW,
+        height: stageRef.current?.clientHeight || g.canvasH,
         backgroundColor: product.background,
         preserveObjectStacking: true,
+        fireMiddleClick: true,
+        // The page clip is applied after objects but before this, so drawing
+        // controls last keeps selection handles visible on edge-hugging objects.
+        controlsAboveOverlay: true,
       });
-      canvas.setDimensions({ width: g.canvasW, height: g.canvasH });
       canvas.__fabric = fabric;
       fabricRef.current = canvas;
+      ensurePageClip();
+      syncStageSize();
+      fitToStage();
       attachSnapGuides(canvas, g, fabric);
 
       if (typeof document !== "undefined" && document.fonts) {
@@ -272,6 +423,79 @@ export default function Page() {
       canvas.on("selection:created", syncSel);
       canvas.on("selection:updated", syncSel);
       canvas.on("selection:cleared", () => setSel(null));
+
+      // Ctrl/Cmd + wheel (and trackpad pinch, which browsers report the same
+      // way) zooms on the cursor. A plain wheel/two-finger scroll pans.
+      canvas.on("mouse:wheel", (opt) => {
+        const e = opt.e;
+        e.preventDefault();
+        e.stopPropagation();
+        const step = e.deltaMode === 1 ? 16 : 1;
+        if (e.ctrlKey || e.metaKey) {
+          zoomAt(
+            canvas.getZoom() * Math.pow(0.99, e.deltaY * step),
+            canvas.getViewportPoint(e),
+          );
+        } else {
+          panBy(-e.deltaX * step, -e.deltaY * step);
+        }
+      });
+
+      // Drag-to-pan: hold space, or middle-drag, or Alt-drag. Handled natively on
+      // the stage in the capture phase so fabric never starts an object drag.
+      const stage = stageRef.current;
+      const wantsPan = (e) =>
+        panRef.current.spaceDown || e.button === 1 || e.altKey;
+      const onDown = (e) => {
+        if (!wantsPan(e)) return;
+        e.preventDefault();
+        e.stopPropagation();
+        panRef.current.active = true;
+        panRef.current.x = e.clientX;
+        panRef.current.y = e.clientY;
+        canvas.defaultCursor = "grabbing";
+        canvas.setCursor("grabbing");
+        try {
+          stage?.setPointerCapture(e.pointerId);
+        } catch {}
+      };
+      const onMove = (e) => {
+        if (!panRef.current.active) return;
+        e.preventDefault();
+        panBy(e.clientX - panRef.current.x, e.clientY - panRef.current.y);
+        panRef.current.x = e.clientX;
+        panRef.current.y = e.clientY;
+      };
+      const onUp = (e) => {
+        if (!panRef.current.active) return;
+        panRef.current.active = false;
+        canvas.defaultCursor = panRef.current.spaceDown ? "grab" : "default";
+        canvas.setCursor(canvas.defaultCursor);
+        try {
+          stage?.releasePointerCapture(e.pointerId);
+        } catch {}
+      };
+      stage?.addEventListener("pointerdown", onDown, true);
+      stage?.addEventListener("pointermove", onMove, true);
+      stage?.addEventListener("pointerup", onUp, true);
+      stage?.addEventListener("pointercancel", onUp, true);
+      // Middle-click otherwise triggers the browser's autoscroll cursor.
+      const noAuto = (e) => {
+        if (e.button === 1) e.preventDefault();
+      };
+      stage?.addEventListener("mousedown", noAuto);
+      cleanupRef.current = () => {
+        stage?.removeEventListener("pointerdown", onDown, true);
+        stage?.removeEventListener("pointermove", onMove, true);
+        stage?.removeEventListener("pointerup", onUp, true);
+        stage?.removeEventListener("pointercancel", onUp, true);
+        stage?.removeEventListener("mousedown", noAuto);
+      };
+
+      if (typeof ResizeObserver !== "undefined" && stage) {
+        ro = new ResizeObserver(() => syncStageSize());
+        ro.observe(stage);
+      }
       snapshot();
     })();
     const onKey = async (e) => {
@@ -281,6 +505,35 @@ export default function Page() {
       const editing = active?.isEditing;
       const meta = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
+
+      // Hold space to pan (ignored mid-text-edit, where space is just a space)
+      if (e.code === "Space" && !editing) {
+        e.preventDefault();
+        if (!panRef.current.spaceDown) {
+          panRef.current.spaceDown = true;
+          c.defaultCursor = "grab";
+          c.setCursor("grab");
+          c.skipTargetFind = true;
+          c.selection = false;
+        }
+        return;
+      }
+      // Zoom shortcuts
+      if (meta && (key === "=" || key === "+")) {
+        e.preventDefault();
+        zoomAt(c.getZoom() * 1.2, null);
+        return;
+      }
+      if (meta && (key === "-" || key === "_")) {
+        e.preventDefault();
+        zoomAt(c.getZoom() / 1.2, null);
+        return;
+      }
+      if (meta && key === "0") {
+        e.preventDefault();
+        fitToStage();
+        return;
+      }
 
       // Delete
       if ((e.key === "Delete" || e.key === "Backspace") && active && !editing) {
@@ -346,11 +599,30 @@ export default function Page() {
         nudgeTimerRef.current = setTimeout(() => snapshot(), 400);
       }
     };
+    const onKeyUp = (e) => {
+      if (e.code !== "Space") return;
+      const c = fabricRef.current;
+      panRef.current.spaceDown = false;
+      if (!c) return;
+      c.defaultCursor = "default";
+      c.setCursor("default");
+      c.skipTargetFind = false;
+      c.selection = true;
+    };
+    // A tab-away while space is held would otherwise leave pan mode stuck on.
+    const onBlur = () => onKeyUp({ code: "Space" });
     window.addEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
     return () => {
       disposed = true;
       clearTimeout(nudgeTimerRef.current);
       window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
+      ro?.disconnect();
+      cleanupRef.current?.();
+      clipRef.current = null;
       canvas?.dispose();
       fabricRef.current = null;
     };
@@ -581,12 +853,6 @@ export default function Page() {
       });
       if (lock) c.discardActiveObject();
     });
-  const applyZoom = (z) => {
-    const c = fabricRef.current;
-    c.setZoom(z);
-    c.setDimensions({ width: g.canvasW * z, height: g.canvasH * z });
-    setZoom(z);
-  };
   const download = async () => {
     const c = fabricRef.current;
     if (typeof document !== "undefined" && document.fonts) {
@@ -594,12 +860,21 @@ export default function Page() {
         await document.fonts.ready;
       } catch {}
     }
-    const pz = c.getZoom();
-    c.setZoom(1);
+    // Export the sheet itself, not what happens to be in view: drop the
+    // viewport transform and the on-screen page clip, size the canvas to the
+    // real page, render, then put the editing view back exactly as it was.
+    const prevVpt = [...c.viewportTransform];
+    const prevW = c.getWidth();
+    const prevH = c.getHeight();
+    const prevClip = c.clipPath;
+    c.clipPath = undefined;
+    c.setViewportTransform([1, 0, 0, 1, 0, 0]);
     c.setDimensions({ width: g.canvasW, height: g.canvasH });
     const data = c.toDataURL({ format: "png", multiplier: g.exportMultiplier });
-    c.setZoom(pz);
-    c.setDimensions({ width: g.canvasW * pz, height: g.canvasH * pz });
+    c.clipPath = prevClip;
+    c.setDimensions({ width: prevW, height: prevH });
+    c.setViewportTransform(prevVpt);
+    c.requestRenderAll();
     const a = document.createElement("a");
     a.href = data;
     a.download = `${product.id}-${side}.png`;
@@ -626,6 +901,7 @@ export default function Page() {
     else {
       c.clear();
       c.backgroundColor = product.background;
+      ensurePageClip();
       drawGuides();
       c.requestRenderAll();
     }
@@ -689,20 +965,21 @@ export default function Page() {
           </IconBtn>
         </div>
         <div className="flex items-center rounded-xl bg-slate-100 p-1">
-          <IconBtn
-            onClick={() => applyZoom(Math.max(0.4, +(zoom - 0.15).toFixed(2)))}
-            label="Zoom out"
-          >
+          <IconBtn onClick={() => applyZoom(zoom / 1.2)} label="Zoom out">
             <ZoomOut className="h-4 w-4" />
           </IconBtn>
-          <span className="w-12 text-center text-[12px] font-bold text-[#475467]">
-            {Math.round(zoom * 100)}%
-          </span>
-          <IconBtn
-            onClick={() => applyZoom(Math.min(2.5, +(zoom + 0.15).toFixed(2)))}
-            label="Zoom in"
+          <button
+            onClick={() => applyZoom(1)}
+            title="Reset to 100%"
+            className="w-12 text-center text-[12px] font-bold text-[#475467] transition hover:text-[#0037CA]"
           >
+            {Math.round(zoom * 100)}%
+          </button>
+          <IconBtn onClick={() => applyZoom(zoom * 1.2)} label="Zoom in">
             <ZoomIn className="h-4 w-4" />
+          </IconBtn>
+          <IconBtn onClick={fitToStage} label="Fit to screen">
+            <Maximize2 className="h-4 w-4" />
           </IconBtn>
         </div>
         <div className="ml-auto flex items-center gap-3">
@@ -935,23 +1212,31 @@ export default function Page() {
         </aside>
 
         <main
-          className="relative flex flex-1 items-center justify-center overflow-auto p-10"
+          ref={stageRef}
+          className="relative flex-1 touch-none overflow-hidden"
           style={{
             backgroundImage: "radial-gradient(#d5d9e0 1px, transparent 1px)",
             backgroundSize: "18px 18px",
           }}
         >
+          {/* Sheet drop-shadow. The canvas paints the page itself (clipped to
+              the trim box), so this only needs to supply the edge treatment —
+              it follows the viewport transform to stay glued to the page. */}
           <div
-            className="rounded-xl bg-white shadow-[0_20px_60px_-18px_rgba(15,23,41,0.35)] ring-1 ring-black/5"
-            style={{ width: g.canvasW * zoom, height: g.canvasH * zoom }}
-          >
-            <canvas
-              ref={elRef}
-              width={g.canvasW}
-              height={g.canvasH}
-              className="block rounded-xl"
-              style={{ width: g.canvasW, height: g.canvasH }}
-            />
+            className="pointer-events-none absolute shadow-[0_20px_60px_-18px_rgba(15,23,41,0.35)] ring-1 ring-black/10"
+            style={{
+              left: view.x,
+              top: view.y,
+              width: g.canvasW * view.zoom,
+              height: g.canvasH * view.zoom,
+            }}
+          />
+          <div className="absolute inset-0">
+            <canvas ref={elRef} />
+          </div>
+          <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/85 px-3 py-1 text-[11px] font-medium text-[#667085] shadow-sm ring-1 ring-black/5 backdrop-blur">
+            Ctrl/⌘ + scroll to zoom · space or middle-drag to pan · Ctrl/⌘ + 0 to
+            fit
           </div>
         </main>
 

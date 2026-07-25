@@ -41,9 +41,14 @@ export function attachSnapGuides(canvas, g, fabric, threshold = 6) {
     ctx.save();
     ctx.strokeStyle = ctxLineColor;
     ctx.lineWidth = 1;
-    const z = canvas.getZoom();
-    vLines.forEach((x) => { ctx.beginPath(); ctx.moveTo(x * z, 0); ctx.lineTo(x * z, canvas.height); ctx.stroke(); });
-    hLines.forEach((y) => { ctx.beginPath(); ctx.moveTo(0, y * z); ctx.lineTo(canvas.width, y * z); ctx.stroke(); });
+    // Guides are drawn straight onto the overlay context, which is NOT under the
+    // viewport transform — so scene coords have to be converted by hand. Using
+    // zoom alone would leave the lines behind as soon as the stage is panned.
+    const [z, , , , offX, offY] = canvas.viewportTransform;
+    const toX = (x) => x * z + offX;
+    const toY = (y) => y * z + offY;
+    vLines.forEach((x) => { ctx.beginPath(); ctx.moveTo(toX(x), 0); ctx.lineTo(toX(x), canvas.height); ctx.stroke(); });
+    hLines.forEach((y) => { ctx.beginPath(); ctx.moveTo(0, toY(y)); ctx.lineTo(canvas.width, toY(y)); ctx.stroke(); });
     ctx.restore();
   };
 

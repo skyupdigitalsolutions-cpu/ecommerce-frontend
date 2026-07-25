@@ -29,6 +29,17 @@ const BODY =
 
 const path = (d, fill, opts) => ({ type: "path", path: d, fill, ...opts });
 
+/* fabric v7 defaults originX/originY to "center", so a bare { left, top } on a
+ * rect is read as its centre point and the shape lands half its own size up and
+ * to the left. Every rect goes through this helper to pin it to top-left, the
+ * same way txt() already does for text. */
+const rect = (opts) => ({
+  type: "rect",
+  originX: "left",
+  originY: "top",
+  ...opts,
+});
+
 /* ---- Angular: navy + orange angular header/footer, two-tone wordmark, icon contacts ---- */
 function angular(s, g) {
   const NAVY = s.primary,
@@ -61,6 +72,10 @@ function angular(s, g) {
   const contactW = icoL - gap - cL;
 
   const rowTops = [tT + 24, tT + 52, tT + 80];
+  // A 9.5px Arial line is ~11px tall, the icon chip is 18px. Lifting the chip by
+  // the difference centres it on its text line instead of hanging below it.
+  const CONTACT_LINE_H = 11;
+  const icoTop = (row) => row + (CONTACT_LINE_H - iconSize) / 2;
 
   // Filled 16x16 glyphs
   const iconGlyph = (d, left, top) =>
@@ -131,8 +146,7 @@ function angular(s, g) {
       ),
 
       // Logo
-      {
-        type: "rect",
+      rect({
         left: logoCx,
         top: logoCy,
         width: logoR * 2,
@@ -143,7 +157,7 @@ function angular(s, g) {
         fill: ORANGE,
         originX: "center",
         originY: "center",
-      },
+      }),
 
       txt("S", "#ffffff", {
         left: logoCx - logoR,
@@ -213,43 +227,40 @@ function angular(s, g) {
       }),
 
       // Orange icon backgrounds
-      {
-        type: "rect",
+      rect({
         left: icoL,
-        top: rowTops[0],
+        top: icoTop(rowTops[0]),
         width: iconSize,
         height: iconSize,
         rx: 4,
         ry: 4,
         fill: ORANGE,
-      },
+      }),
 
-      {
-        type: "rect",
+      rect({
         left: icoL,
-        top: rowTops[1],
+        top: icoTop(rowTops[1]),
         width: iconSize,
         height: iconSize,
         rx: 4,
         ry: 4,
         fill: ORANGE,
-      },
+      }),
 
-      {
-        type: "rect",
+      rect({
         left: icoL,
-        top: rowTops[2],
+        top: icoTop(rowTops[2]),
         width: iconSize,
         height: iconSize,
         rx: 4,
         ry: 4,
         fill: ORANGE,
-      },
+      }),
 
       // White icons
-      iconGlyph(PHONE_D, icoL, rowTops[0]),
-      iconGlyph(MAIL_D, icoL, rowTops[1]),
-      iconGlyph(PIN_D, icoL, rowTops[2]),
+      iconGlyph(PHONE_D, icoL, icoTop(rowTops[0])),
+      iconGlyph(MAIL_D, icoL, icoTop(rowTops[1])),
+      iconGlyph(PIN_D, icoL, icoTop(rowTops[2])),
     ],
   };
 }
@@ -328,14 +339,13 @@ function automotive(s, g) {
           lineHeight: 1.35,
         },
       ),
-      {
-        type: "rect",
+      rect({
         left: L + colW + 12,
         top: ruleY,
         width: L + W - (L + colW + 12),
         height: 1.5,
         fill: s.primary,
-      },
+      }),
     ],
   };
 }
@@ -402,22 +412,20 @@ function crest(s, g) {
         textAlign: "center",
         fontFamily: "Arial",
       }),
-      {
-        type: "rect",
+      rect({
         left: L,
         top: ruleY,
         width: W * 0.16,
         height: 1,
         fill: s.accent,
-      },
-      {
-        type: "rect",
+      }),
+      rect({
         left: L + W * 0.84,
         top: ruleY,
         width: W * 0.16,
         height: 1,
         fill: s.accent,
-      },
+      }),
       txt("Email: hello@yourcompany.com", "#111827", {
         left: L,
         top: footT + 48,
