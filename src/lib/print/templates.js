@@ -26,6 +26,30 @@ import {
   getLbTemplate,
   getLbScheme,
 } from "./templates-label";
+import {
+  EN_TEMPLATES,
+  EN_SCHEMES,
+  getEnTemplate,
+  getEnScheme,
+} from "./templates-envelope";
+import {
+  BR_TEMPLATES,
+  BR_SCHEMES,
+  getBrTemplate,
+  getBrScheme,
+} from "./templates-brochure";
+import {
+  FL_TEMPLATES,
+  FL_SCHEMES,
+  getFlTemplate,
+  getFlScheme,
+} from "./templates-flyer";
+import {
+  ST_TEMPLATES,
+  ST_SCHEMES,
+  getStTemplate,
+  getStScheme,
+} from "./templates-standee";
 
 const REGISTRY = {
   "visiting-card": {
@@ -56,6 +80,34 @@ const REGISTRY = {
     getScheme: getLbScheme,
     defaultScheme: "navy",
   },
+  envelope: {
+    templates: EN_TEMPLATES,
+    schemes: EN_SCHEMES,
+    getTemplate: getEnTemplate,
+    getScheme: getEnScheme,
+    defaultScheme: "navy",
+  },
+  brochure: {
+    templates: BR_TEMPLATES,
+    schemes: BR_SCHEMES,
+    getTemplate: getBrTemplate,
+    getScheme: getBrScheme,
+    defaultScheme: "navy",
+  },
+  flyer: {
+    templates: FL_TEMPLATES,
+    schemes: FL_SCHEMES,
+    getTemplate: getFlTemplate,
+    getScheme: getFlScheme,
+    defaultScheme: "navy",
+  },
+  standee: {
+    templates: ST_TEMPLATES,
+    schemes: ST_SCHEMES,
+    getTemplate: getStTemplate,
+    getScheme: getStScheme,
+    defaultScheme: "navy",
+  },
 };
 
 const FALLBACK = REGISTRY["visiting-card"];
@@ -72,7 +124,9 @@ export function buildScenes(productId, templateId, schemeId, g, data) {
   const tpl = set.getTemplate(templateId);
   if (!tpl || !g) return null;
   if (tpl.doubleSided) {
-    const both = tpl.buildSides(g, data) || {};
+    // Third argument is the colour scheme. Templates that bake their own palette
+    // (the visiting cards) take (g, data) and simply ignore it.
+    const both = tpl.buildSides(g, data, set.getScheme(schemeId)) || {};
     return { tpl, front: both.front || null, back: both.back || null };
   }
   return {

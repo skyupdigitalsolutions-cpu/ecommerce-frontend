@@ -26,10 +26,17 @@ const CATEGORY_TO_EDITOR = {
 /* Within an eligible category a product's own name is often more specific than
  * the category itself — a flyer filed under Stationery, say. These only refine
  * WHICH editor opens; they never make an ineligible category eligible. */
+/* Order matters: the first match wins, so the specific formats have to be tested
+ * before the generic poster catch-all. Getting this wrong is how envelopes,
+ * brochures, flyers and standees all ended up on the poster canvas. */
 const KEYWORD_TO_EDITOR = [
   [/visiting\s*card|business\s*card/, "visiting-card"],
+  [/envelope/, "envelope"],
+  [/brochure|leaflet|bi-?fold|tri-?fold|booklet/, "brochure"],
+  [/flyer|flier|hand\s*bill|handbill|pamphlet/, "flyer"],
+  [/standee|roll[-\s]?up|rollup|backdrop/, "standee"],
   [/letterhead|letter\s*head/, "letterhead"],
-  [/poster|banner|standee|flyer|signage|sign\s*board|signboard/, "poster"],
+  [/poster|banner|signage|sign\s*board|signboard|hoarding/, "poster"],
   [/label|sticker|packaging|carton|pouch/, "label"],
 ];
 

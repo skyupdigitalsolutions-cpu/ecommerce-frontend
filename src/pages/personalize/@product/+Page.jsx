@@ -40,6 +40,11 @@ export default function Page() {
   const g = useMemo(() => (product ? geometry(product) : null), [product]);
   const tpl = templateId ? set.getTemplate(templateId) : null;
   const doubleSided = !!tpl?.doubleSided;
+  // Most double-sided templates bake their own palette (the visiting cards), but
+  // some accept a scheme, so the picker follows the template rather than the side
+  // count.
+  const showSchemes =
+    set.schemes.length > 1 && (!doubleSided || !!tpl?.schemeAware);
 
   // Preview is scaled to fit its column; the export always renders at full
   // print resolution regardless of what the preview is showing.
@@ -497,7 +502,7 @@ export default function Page() {
               </>
             )}
 
-            {!doubleSided && set.schemes.length > 1 && (
+            {showSchemes && (
               <>
                 <p className="mt-4 text-[12px] font-semibold text-[#344054]">
                   Colour
@@ -539,7 +544,11 @@ export default function Page() {
                 </button>
               )}
               <p className="pt-1 text-center text-[11px] text-[#98A2B3]">
-                Exports at {product.dpi} DPI, print ready with bleed.
+                Exports at {g.exportDpi} DPI, print ready with bleed
+                {g.exportDpi < product.dpi
+                  ? ` (capped from ${product.dpi} — the full-size file is too large for a browser to render)`
+                  : ""}
+                .
               </p>
             </div>
           </div>

@@ -41,6 +41,36 @@ export function fitFontSize(text, boxWidth, maxSize, opts = {}) {
   return Math.max(minSize, Math.min(maxSize, Math.floor(fits * 10) / 10));
 }
 
+/* Largest font size at which a multi-line block fits BOTH a width and a height.
+ * fitFontSize only constrains the width, which is enough for a headline but not
+ * for a bulleted list or a contact block, where the number of wrapped lines is
+ * what overruns the panel. Steps down in half points until it fits. */
+export function fitBlockFontSize(
+  text,
+  boxWidth,
+  boxHeight,
+  maxSize,
+  opts = {},
+) {
+  const {
+    minSize = 6,
+    em = EM.regular,
+    charSpacing = 0,
+    lineHeight = 1.16,
+  } = opts;
+  const paras = String(text ?? "").split("\n");
+  for (let size = maxSize; size > minSize; size -= 0.5) {
+    const perChar = size * advance(em, charSpacing);
+    const cols = Math.max(1, Math.floor(boxWidth / perChar));
+    const rows = paras.reduce(
+      (n, para) => n + Math.max(1, Math.ceil(para.length / cols)),
+      0,
+    );
+    if (rows * size * lineHeight <= boxHeight) return size;
+  }
+  return minSize;
+}
+
 /* Read a form value, falling back to the design's own placeholder when the field
  * is absent or blank, so an untouched form previews exactly as designed. */
 export function val(d, key, fallback) {
